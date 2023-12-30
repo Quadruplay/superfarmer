@@ -17,7 +17,7 @@ async function loadImages() {
     "nightmare","arrowFlip","arrowNoFlip","arrowHoverFlip","lettuce","celestialDeer", "otter", "beaver", "hippocampus",
     "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
     "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
-    "brie", "gouda", "blueCheese", "snowFox", "freeze"];
+    "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -99,6 +99,7 @@ let animalInstructions = {
     "beaver": "The 2nd most expensive animal available in the pond. Requires the Pond Addon.",
     "hippocampus": "The most expensive animal available in the pond. Requires the Pond Addon.",
     "turtle": "Protects against otter attacks. Requires the Pond Addon.",
+    "otter": "Eats cod, salmon, duck, and beaver. Requires the Pond Addon.",
     "frog": "Can be used to lower prices of pond trades by 1. Requires the Pond Addon.",
     "alpaca": "Can be used to reroll one of the breeding dice. Requires the Alpaca Addon.",
     "milk": "Produced by cows. Can be used to make cheese. Requires the Cheese Addon.",
@@ -109,13 +110,23 @@ let animalInstructions = {
     "gouda": "Triggers breeding of the cheapest animal whose breeding hasn't been triggered in the breeding phase. Requires the Cheese Addon.",
     "mouse": "Can be used to increase the milk cap. Requires the Cheese Addon.",
     "snowFox": "Replaces the fox. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon.",
+    "iceWolf": "Replaces the wolf. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon.",
+    "seal": "Replaces the otter. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon adn the Pond Addon.",
+    "phoenix": "Protects against freezing. Requires the Snow Fox Addon.",
 }
 class Player {
     constructor(name) {
         this.name = name;
         this.freeze = {
             "chicken": false,
-            "rabbit": false
+            "rabbit": false,
+            "sheep": false,
+            "pig": false,
+            "cow": false,
+            "cod": false,
+            "salmon": false,
+            "duck": false,
+            "beaver": false,
         }
         this.animals = {
             "chicken": 0,
@@ -130,6 +141,7 @@ class Player {
             "pegasus": 0,
             "smallDog": 0,
             "bigDog": 0,
+            "phoenix": 0,
             "milk": 0,
             "cheese": 0,
             "cheddar": 0,
@@ -175,6 +187,7 @@ class Player {
             "pegasus": 0,
             "smallDog": 2,
             "bigDog": 2,
+            "phoenix": 4,
             "stork": 4,
             "badger": -1,
             "rooster": -1,
@@ -315,7 +328,9 @@ class Player {
                 this.animals["chicken"] = Math.min(1, this.animals["chicken"]);
                 this.animals["rabbit"] = addons["chicken"] ? 0 : Math.min(1, this.animals["rabbit"]);
             }
-            if (addons["snowFox"]) {
+            if (this.animals["phoenix"] > 0) {
+                this.animals["phoenix"]--;
+            } else if (addons["snowFox"]) {
                 this.freeze["chicken"] = true;
                 this.freeze["rabbit"] = true;
             }
@@ -333,6 +348,13 @@ class Player {
                 this.animals["sheep"] = 0;
                 this.animals["pig"] = 0;
                 this.animals["cow"] = 0;
+            }
+            if (this.animals["phoenix"] > 0) {
+                this.animals["phoenix"]--;
+            } else if (addons["snowFox"]) {
+                this.freeze["sheep"] = true;
+                this.freeze["pig"] = true;
+                this.freeze["cow"] = true;
             }
             if (addons["badger"]) {
                 players.forEach((player) => {
@@ -354,6 +376,14 @@ class Player {
                 this.animals["salmon"] = 0;
                 this.animals["duck"] = 0;
                 this.animals["beaver"] = 0;
+            }
+            if (this.animals["phoenix"] > 0) {
+                this.animals["phoenix"]--;
+            } else if (addons["snowFox"]) {
+                this.freeze["cod"] = true;
+                this.freeze["salmon"] = true;
+                this.freeze["duck"] = true;
+                this.freeze["beaver"] = true;
             }
             this.animals["frog"]++;
         }
@@ -401,7 +431,7 @@ class Player {
                 case "farm":
                     for (let animal of ["chicken", "rabbit", "sheep", "pig", "cow", "horse"]) {
                         if (!goudaBreed && this.animals["gouda"] > 0) {
-                            if (breedingObject[animal]==0 && (["chicken","rabbit"].includes(animal) ? !this.freeze[animal] : true)) {
+                            if (breedingObject[animal]==0 && !this.freeze[animal]) {
                                 if ((animal == "chicken" && addons["chicken"]) || animal != "chicken") {
                                     breedingObject[animal]++;
                                     goudaBreed = true;
@@ -447,8 +477,18 @@ class Player {
                 }
             }
             this.animals["chicken"] += roosterTemp;
-            this.freeze["chicken"] = false;
-            this.freeze["rabbit"] = false;
+            if (breedType == "farm") {
+                this.freeze["chicken"] = false;
+                this.freeze["rabbit"] = false;
+                this.freeze["sheep"] = false;
+                this.freeze["pig"] = false;
+                this.freeze["cow"] = false;
+            } else if (breedType == "pond") {
+                this.freeze["cod"] = false;
+                this.freeze["salmon"] = false;
+                this.freeze["duck"] = false;
+                this.freeze["beaver"] = false;
+            }
             if (breedingObject["fox"] > 0) {
                 this.foxAttack();
             }
@@ -761,6 +801,8 @@ function renderPlayers(players) {
                 quantifier = addons["lettuce"];
             } else if ([ "milk", "mouse", "cheddar", "brie", "gouda", "blueCheese" ].includes(animal)) {
                 quantifier = addons["cheese"];
+            } else if (animal == "phoenix") {
+                quantifier = addons["snowFox"];
             }
             if (quantifier) {
                 let text = String(amount);
@@ -1131,7 +1173,12 @@ function renderGame() {
             });
             break;
         case "badger":
-            renderLine("You got a "+roll1+" and a "+roll2+"!", 1, "rgb(0, 0, 0)");
+            text = "You got a "+roll1+" and a "+roll2+"!";
+            if (addons["snowFox"]) {
+                text = text.replace("fox", "snow fox");
+                text = text.replace("wolf", "ice wolf");
+            }
+            renderLine(text, 1, "rgb(0, 0, 0)");
             badgerOption1 = "";
             badgerOption2 = "";
             badgerOption3 = "";
@@ -1179,7 +1226,12 @@ function renderGame() {
             });
             break;
         case "breedResult":
-            renderLine("You got a "+roll1+" and a "+roll2+"!", 1, "rgb(0, 0, 0)");
+            text = "You got a "+roll1+" and a "+roll2+"!";
+            if (addons["snowFox"]) {
+                text = text.replace("fox", "snow fox");
+                text = text.replace("wolf", "ice wolf");
+            }
+            renderLine(text, 1, "rgb(0, 0, 0)");
             image(roll1, width/2+playerWidth/2-buttonSize*3/2, buttonSize, buttonSize);
             image(roll2, width/2+playerWidth/2+buttonSize/2, buttonSize, buttonSize);
             if (badgerTemp != "") {
@@ -1450,6 +1502,9 @@ function renderGame() {
                 if (players[turn-1].animalCap["milk"] >= 7 && playerList.length != 0) shop.push([["milk", 7], ["blueCheese", 1], "leftToRight"]);
                 if (players[turn-1].animalCap["milk"] >= 8) shop.push([["milk", 8], ["gouda", 1], "leftToRight"]);
             }
+            if (addons["snowFox"] && players[turn-1].animals["phoenix"] < 4) {
+                shop.push([["pig", 1], ["phoenix", 1], "leftToRight"]);
+            }
             shopPages = Math.ceil(shop.length/24);
             shopPageArr = [];
             for (let i = 0; i < 24; i++) {
@@ -1631,7 +1686,13 @@ function renderGame() {
             });
             break;
         case "shadowTalisman":
-            renderLine("Which player do you want to send the "+temp+" to?", 1, "rgb(0, 0, 0)");
+            text = "Which player do you want to send the "+temp+" to?";
+            if (addons["snowFox"]) {
+                text = text.replace("fox", "snow fox");
+                text = text.replace("otter", "seal");
+                text = text.replace("wolf", "ice wolf");
+            }
+            renderLine(text, 1, "rgb(0, 0, 0)");
             playerList = [];
             players.forEach((player, index) => {
                 if (index+1 != turn) {
@@ -1738,7 +1799,10 @@ function renderGame() {
             image(pondRoll2, width/2+playerWidth/2+buttonSize/2, buttonSize, buttonSize);
             break;
         case "pondResult":
-            text = "You got a" + String(pondRoll1 == "otter" ? "n " : " ") + pondRoll1 + " and a " + pondRoll2 + "!";
+            text = "You got a" + String(pondRoll1 == "otter" && !addons["snowFox"] ? "n " : " ") + pondRoll1 + " and a " + pondRoll2 + "!";;
+            if (addons["snowFox"]) {
+                text = text.replace("otter", "seal");
+            }
             renderLine(text, 1, "rgb(0, 0, 0)");
             image(pondRoll1, width/2+playerWidth/2-buttonSize*3/2, buttonSize, buttonSize);
             image(pondRoll2, width/2+playerWidth/2+buttonSize/2, buttonSize, buttonSize);
@@ -1796,7 +1860,7 @@ function renderGame() {
             }
             switch (bagRoll) {
                 case "fox":
-                    text = "You're attacked by a fox!";
+                    text = addons["snowFox"] ? "You're attacked by a snow fox!" : "You're attacked by a fox!";
                     break;
                 case "snake":
                     text = "You lose a rabbit!";
@@ -2288,6 +2352,8 @@ function initGame() {
     }
     if (addons["snowFox"]) {
         images["fox"] = images["snowFox"];
+        images["wolf"] = images["iceWolf"];
+        images["otter"] = images["seal"];
     }
     turn = 0;
     nextTurn();
