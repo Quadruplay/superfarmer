@@ -2545,15 +2545,14 @@ async function start() {
 start();
 
 function renderMobileNo() {
+    let text = "This game is not available on mobile (yet). Sorry!";
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillRect(0, 0, width, height);
     ctx.font = "1px pixel";
-    ctx.font = String(width/ctx.measureText("This game is not available on mobile.").width)+"px pixel";
-    ctx.fillStyle = "rgb(255, 255, 0)";
-    ctx.strokeStyle = "rgb(0, 0, 0)";
+    ctx.font = String(width/ctx.measureText(text).width)+"px pixel";
+    ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.lineWidth = 2;
-    ctx.fillText("This game is not available on mobile.", width/2-ctx.measureText("This game is not available on mobile.").width/2, height/2-ctx.measureText("M").width/2);
-    ctx.strokeText("This game is not available on mobile.", width/2-ctx.measureText("This game is not available on mobile.").width/2, height/2-ctx.measureText("M").width/2);
+    ctx.fillText(text, width/2-ctx.measureText(text).width/2, height/2-ctx.measureText("M").width/2);
 }
 
 addEventListener("resize", async function() {
