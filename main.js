@@ -12,12 +12,12 @@ let images = {};
 
 async function loadImages() {
     let imageList = ["stork","badger","goat","cat","rabbit","sheep","pig","cow","horse","smallDog","bigDog","wolf","fox",
-                    "chicken","rooster","eagle","snake","shadowBeast","arrow","arrowNo","arrowHover","bear","bee","honey",
-                    "antiStork","empty","blackSheep","bag","skunk","boar","owl","bonusTurn","donkey","squirrel","pegasus","unicorn",
-                    "nightmare","arrowFlip","arrowNoFlip","arrowHoverFlip","lettuce","celestialDeer", "otter", "beaver", "hippocampus",
-                    "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
-                    "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
-                    "brie", "gouda", "blueCheese", "snowFox", "freeze"];
+    "chicken","rooster","eagle","snake","shadowBeast","arrow","arrowNo","arrowHover","bear","bee","honey",
+    "antiStork","empty","blackSheep","bag","skunk","boar","owl","bonusTurn","donkey","squirrel","pegasus","unicorn",
+    "nightmare","arrowFlip","arrowNoFlip","arrowHoverFlip","lettuce","celestialDeer", "otter", "beaver", "hippocampus",
+    "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
+    "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
+    "brie", "gouda", "blueCheese", "snowFox", "freeze"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -879,6 +879,11 @@ function clearAll() {
     renderPlayArea();
 }
 
+let shop = [];
+let shopPage = 1;
+let shopPages = 0;
+let shopPageArr = [];
+
 function renderGame() {
     removeListeners();
     renderBackground();
@@ -1294,7 +1299,7 @@ function renderGame() {
             break;
         case "shop":
             renderLine("Buy animals!", 1, "rgb(0, 0, 0)");
-            let shop = [];
+            shop = [];
             if (addons["chicken"]) shop.push([["chicken", 4], ["rabbit", 1], "twoSided"]);
             shop.push([["rabbit", 6], ["sheep", 1], "twoSided"])
             if (players[turn-1].animals["pig"] == "goat") {
@@ -1445,6 +1450,33 @@ function renderGame() {
                 if (players[turn-1].animalCap["milk"] >= 7 && playerList.length != 0) shop.push([["milk", 7], ["blueCheese", 1], "leftToRight"]);
                 if (players[turn-1].animalCap["milk"] >= 8) shop.push([["milk", 8], ["gouda", 1], "leftToRight"]);
             }
+            shopPages = Math.ceil(shop.length/24);
+            shopPageArr = [];
+            for (let i = 0; i < 24; i++) {
+                let tradeIndex = (shopPage-1)*24+i;
+                if (tradeIndex < shop.length) {
+                    shopPageArr.push(shop[tradeIndex]);
+                }
+            }
+            shop = shopPageArr;
+            if (shopPage > 1) {
+                imageButton("arrowFlip", playerWidth, 0, buttonSize, buttonSize, () => {
+                    shopPage--;
+                    renderBackground();
+                    renderGame();
+                }, "arrowHoverFlip");
+            } else {
+                image("arrowNoFlip", playerWidth, 0, buttonSize);
+            }
+            if (shopPage < shopPages) {
+                imageButton("arrow", playerWidth+buttonSize, 0, buttonSize, buttonSize, () => {
+                    shopPage++;
+                    renderBackground();
+                    renderGame();
+                }, "arrowHover");
+            } else {
+                image("arrowNo", playerWidth+buttonSize, 0, buttonSize);
+            }
             indexX = 0;
             indexY = 0;
             startX = width/2+playerWidth/2-buttonSize*7;
@@ -1456,6 +1488,7 @@ function renderGame() {
                 } else {
                     if (players[turn-1].animals[item[1][0]] >= item[1][1]) {
                         imageButton("arrowFlip", startX+buttonSize*indexX*5+buttonSize, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
+                            shopPage = 1;
                             players[turn-1].animals[item[0][0]]+=item[0][1];
                             players[turn-1].animals[item[1][0]]-=item[1][1];
                             renderBackground();
@@ -1467,6 +1500,7 @@ function renderGame() {
                 }
                 if (players[turn-1].animals[item[0][0]] >= item[0][1]) {
                     imageButton("arrow", startX+buttonSize*indexX*5+buttonSize*2, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
+                        shopPage = 1;
                         players[turn-1].animals[item[0][0]]-=item[0][1];
                         if (item[0][0] == "celestialTalisman") celestialTalismanUsed = true;
                         if (actionAnimals.includes(item[1][0])) {
@@ -1535,6 +1569,7 @@ function renderGame() {
                     }, ["snake", "fox", "wolf", "otter"].includes(item[1][0]) ? "arrowShadowHover" : item[0][0] == "celestialTalisman" ? "arrowCelestialHover" : "arrowHover");
                 } else if (players[turn-1].animals[item[0][0]]+1 >= item[0][1] && aquaticAnimals.includes(item[0][0]) && players[turn-1].animals["frog"] > 0) {
                     imageButton("arrowFrog", startX+buttonSize*indexX*5+buttonSize*2, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
+                        shopPage = 1;
                         players[turn-1].animals[item[0][0]]-=item[0][1]-1;
                         players[turn-1].animals["frog"]--;
                         players[turn-1].animals[item[1][0]]+=item[1][1];
