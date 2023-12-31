@@ -133,6 +133,7 @@ class Player {
             "duck": false,
             "beaver": false,
         }
+        //rescue scarecrow from depths of github
         this.animals = {
             "chicken": 0,
             "rooster": 0,
