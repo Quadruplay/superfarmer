@@ -17,7 +17,7 @@ async function loadImages() {
     "nightmare","arrowFlip","arrowNoFlip","arrowHoverFlip","lettuce","celestialDeer", "otter", "beaver", "hippocampus",
     "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
     "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
-    "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix"];
+    "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix", "scarecrow", "crow", "pumpkin", "stick", "hay"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -90,8 +90,13 @@ let animalInstructions = {
     "nightmare": "Decreases animal caps by 2. Requires the Shadow Beast Addon.",
     "celestialTalisman": "Grants the player free protective animals and rabbits. Stops nightmare attacks, protects against shadow beast attacks, and doubles the chance of encountering a celestial deer. Requires the Shadow Beast Addon.",
     "shadowTalisman": "Lets the player exchange their protective animals to send predators to another player's farm. Stops unicorn encounters, nullifies celestial deer gifts, doubles the chance of encountering a shadow beast. Makes the shadow beast consume the smallest rather than the largest animal available. Requires the Shadow Beast Addon.",
-    "water": "Can be used to buy lettuce. Requires the Lettuce Addon.",
-    "lettuce": "Increases breeding yields by 1. Requires the Lettuce Addon.",
+    "water": "Can be used to buy lettuce. Requires the Pumpkin Addon.",
+    "stick": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
+    "lettuce": "Increases breeding yields by 1. Requires the Pumpkin Addon.",
+    "hay": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
+    "pumpkin": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
+    "scarecrow": "Stops crows from spawning. Requires the Pumpkin Addon.",
+    "crow": "Decreases breeding yields by 1 for every 4 crows to a minimum of 1. Requires the Pumpkin Addon.",
     "pond": "Allows breeding and trading of aquatic animals. Requires the Pond Addon.",
     "cod": "The cheapest animal available in the pond. Requires the Pond Addon.",
     "salmon": "The 2nd cheapest animal available in the pond. Requires the Pond Addon.",
@@ -162,7 +167,12 @@ class Player {
             "bee": 0,
             "honey": 0,
             "water": 0,
+            "stick": 0,
             "lettuce": 0,
+            "hay": 0,
+            "pumpkin": 0,
+            "scarecrow": 0,
+            "crow": 0,
             "squirrel": 0,
             "donkey": 0,
             "unicorn": 0,
@@ -219,7 +229,12 @@ class Player {
             "brie": -1,
             "blueCheese": -1,
             "gouda": -1,
-            "mouse": 4
+            "mouse": 4,
+            "crow": 16,
+            "scarecrow": -1,
+            "pumpkin": -1,
+            "stick": -1,
+            "hay": -1
         }
         this.setCaps = () => {
             let capObject = {
@@ -469,14 +484,15 @@ class Player {
                     }
                 }
                 if (animal != "fox" && animal != "wolf" && animal != "otter") {
-                    if (this.animals[animal] != "goat") this.animals[animal]+=Math.floor(breedingObject[animal]/2);
                     if (Math.floor(breedingObject[animal]/2) > 0) {
-                        this.animals[animal]+=this.animals["unicorn"]+this.animals["lettuce"]+this.animals["brie"];
+                        breedingObject[animal]+=2*this.animals["unicorn"]+2*this.animals["lettuce"]+2*this.animals["brie"];
+                        if (animal == "chicken") breedingObject[animal]+=2*roosterTemp;
+                        breedingObject[animal]=Math.max(2, breedingObject[animal]-Math.floor(this.animals["crow"]/4));
                         !breed1 ? breed1 = animal : !breed2 ? breed2 = animal : !breed3 ? breed3 = animal : breed4 = animal;
                     }
+                    if (this.animals[animal] != "goat") this.animals[animal]+=Math.floor(breedingObject[animal]/2);
                 }
             }
-            this.animals["chicken"] += roosterTemp;
             if (breedType == "farm") {
                 this.freeze["chicken"] = false;
                 this.freeze["rabbit"] = false;
@@ -908,6 +924,7 @@ function nextTurn() {
         }
     }
     if (addons["pegasus"] && players[turn-1].animals["donkey"] == 0) players[turn-1].animals["squirrel"]++;
+    if (addons["lettuce"] && players[turn-1].animals["scarecrow"] == 0) players[turn-1].animals["crow"]++;
     if (addons["cheese"]) players[turn-1].animals["milk"]+=Math.min(4, players[turn-1].animals["cow"]);
     players[turn-1].prune();
     renderBackground();
@@ -924,6 +941,7 @@ function clearAll() {
 let shop = [];
 let shopPage = 1;
 let shopPages = 0;
+let prevShopPages = 0;
 let shopPageArr = [];
 
 function renderGame() {
@@ -1417,6 +1435,9 @@ function renderGame() {
             if (addons["lettuce"] && players[turn-1].animals["lettuce"] == 0 && players[turn-1].animals["water"] >= 2) {
                 shop.push([["water", 2], ["lettuce", 1], "leftToRight"]);
             }
+            if (players[turn-1].animals["crow"] > 0) {
+                shop.push([["rabbit", 1], ["crow", Math.max(-4, players[turn-1].animals["crow"]*-1)], "leftToRight"]);
+            }
             if (addons["eagle"] && !bagBought) {
                 shop.push([["sheep", 1], ["bag", 1], "leftToRight"]);
             }
@@ -1503,8 +1524,9 @@ function renderGame() {
                 if (players[turn-1].animalCap["milk"] >= 8) shop.push([["milk", 8], ["gouda", 1], "leftToRight"]);
             }
             if (addons["snowFox"] && players[turn-1].animals["phoenix"] < 4) {
-                shop.push([["pig", 1], ["phoenix", 1], "leftToRight"]);
+                shop.push([["sheep", 1], ["phoenix", 1], "leftToRight"]);
             }
+            prevShopPages = shopPages;
             shopPages = Math.ceil(shop.length/24);
             shopPageArr = [];
             for (let i = 0; i < 24; i++) {
@@ -1514,6 +1536,18 @@ function renderGame() {
                 }
             }
             shop = shopPageArr;
+            let craftingRecipes = 0;
+            let craftingArray = [];
+            if (addons["lettuce"] && players[turn-1].animals["scarecrow"] == 0) {
+                craftingRecipes++
+                craftingArray.push(["crafting", ["","pumpkin",""], ["stick","hay","stick"], ["","stick",""], "scarecrow", ["water", 1, "stick"], ["water", 3, "hay"], ["water", 4, "pumpkin"]]);
+            }
+            if (shopPage > shopPages) {
+                shop = craftingArray[shopPage-shopPages-1];
+            }
+            if (shopPage > shopPages+craftingRecipes) {
+                shopPage = shopPages+craftingRecipes;
+            }
             if (shopPage > 1) {
                 imageButton("arrowFlip", playerWidth, 0, buttonSize, buttonSize, () => {
                     shopPage--;
@@ -1523,7 +1557,7 @@ function renderGame() {
             } else {
                 image("arrowNoFlip", playerWidth, 0, buttonSize);
             }
-            if (shopPage < shopPages) {
+            if (shopPage < shopPages+craftingRecipes) {
                 imageButton("arrow", playerWidth+buttonSize, 0, buttonSize, buttonSize, () => {
                     shopPage++;
                     renderBackground();
@@ -1536,6 +1570,109 @@ function renderGame() {
             indexY = 0;
             startX = width/2+playerWidth/2-buttonSize*7;
             startY = buttonSize;
+            {
+            if (shop[0] == "crafting") {
+                let line1 = shop[1];
+                let line2 = shop[2];
+                let line3 = shop[3];
+                let result = shop[4];
+                let ingredients = [...line1, ...line2, ...line3];
+                let ingredientAmounts = {};
+                let playerIngredients = {};
+                ingredients.forEach((ingredient) => {
+                    if (ingredient != "") {
+                        if (ingredientAmounts[ingredient]) {
+                            ingredientAmounts[ingredient]++;
+                        } else {
+                            ingredientAmounts[ingredient] = 1;
+                        }
+                    }
+                });
+                Object.keys(ingredientAmounts).forEach((ingredient) => {
+                    playerIngredients[ingredient] = players[turn-1].animals[ingredient];
+                });
+                let canCraft = true;
+                Object.keys(ingredientAmounts).forEach((ingredient) => {
+                    if (playerIngredients[ingredient] < ingredientAmounts[ingredient]) {
+                        canCraft = false;
+                    }
+                });
+                line1.forEach((ingredient, index) => {
+                    if (ingredient == "") {
+                        image("empty", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY, buttonSize);
+                    } else {
+                        imageText(ingredient, playerIngredients[ingredient] > 0 ? "  V" : "  X", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY, buttonSize, playerIngredients[ingredient] > 0 ? "rgb(0, 255, 0)" : "rgb(255, 0, 0)");
+                        if (playerIngredients[ingredient] > 0) {
+                            playerIngredients[ingredient]--;
+                            ingredientAmounts[ingredient]--;
+                        }
+                    }
+                });
+                line2.forEach((ingredient, index) => {
+                    if (ingredient == "") {
+                        image("empty", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY+buttonSize, buttonSize);
+                    } else {
+                        imageText(ingredient, playerIngredients[ingredient] > 0 ? "  V" : "  X", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY+buttonSize, buttonSize, playerIngredients[ingredient] > 0 ? "rgb(0, 255, 0)" : "rgb(255, 0, 0)");
+                        if (playerIngredients[ingredient] > 0) {
+                            playerIngredients[ingredient]--;
+                            ingredientAmounts[ingredient]--;
+                        }
+                    }
+                });
+                if (canCraft) {
+                    imageButton("arrow", width/2+playerWidth/2-2.5*buttonSize+line1.length*buttonSize, startY+buttonSize, buttonSize, buttonSize, () => {
+                        players[turn-1].animals[result]++;
+                        line1.forEach((ingredient, index) => {
+                            if (ingredient != "") {
+                                players[turn-1].animals[ingredient]--;
+                            }
+                        });
+                        line2.forEach((ingredient, index) => {
+                            if (ingredient != "") {
+                                players[turn-1].animals[ingredient]--;
+                            }
+                        });
+                        line3.forEach((ingredient, index) => {
+                            if (ingredient != "") {
+                                players[turn-1].animals[ingredient]--;
+                            }
+                        });
+                        renderBackground();
+                        renderGame();
+                    }, "arrowHover");
+                } else {
+                    image("arrowNo", width/2+playerWidth/2-2.5*buttonSize+line1.length*buttonSize, startY+buttonSize, buttonSize);
+                }
+                imageText(result, "  1", width/2+playerWidth/2-2.5*buttonSize+line1.length*buttonSize+buttonSize, startY+buttonSize, buttonSize, "rgb(0, 0, 0)");
+                line3.forEach((ingredient, index) => {
+                    if (ingredient == "") {
+                        image("empty", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY+buttonSize*2, buttonSize);
+                    } else {
+                        imageText(ingredient, playerIngredients[ingredient] > 0 ? "  V" : "  X", width/2+playerWidth/2-2.5*buttonSize+index*buttonSize, startY+buttonSize*2, buttonSize, playerIngredients[ingredient] > 0 ? "rgb(0, 255, 0)" : "rgb(255, 0, 0)");
+                        if (playerIngredients[ingredient] > 0) {
+                            playerIngredients[ingredient]--;
+                            ingredientAmounts[ingredient]--;
+                        }
+                    }
+                });
+                for (let i = 0; i < 5; i++) {
+                    shop.shift();
+                }
+                let ingredientRecipes = shop;
+                let recipes = [];
+                Object.keys(ingredientAmounts).forEach((ingredient) => {
+                    if (ingredientAmounts[ingredient] > 0) {
+                        ingredientRecipes.forEach((recipe) => {
+                            if (recipe[2] == ingredient) {
+                                recipes.push([[recipe[0], recipe[1]], [recipe[2], 1], "leftToRight"]);
+                            }
+                        });
+                    }
+                });
+                shop = recipes;
+                indexY+=2+1/3;
+            }
+            }
             shop.forEach((item, index) => {
                 imageText(item[0][0], String(item[0][1]), startX+buttonSize*indexX*5, startY+buttonSize*indexY*1.5, buttonSize, "rgb(0, 0, 0)");
                 if (item[2] == "leftToRight") {
@@ -1543,7 +1680,6 @@ function renderGame() {
                 } else {
                     if (players[turn-1].animals[item[1][0]] >= item[1][1]) {
                         imageButton("arrowFlip", startX+buttonSize*indexX*5+buttonSize, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
-                            shopPage = 1;
                             players[turn-1].animals[item[0][0]]+=item[0][1];
                             players[turn-1].animals[item[1][0]]-=item[1][1];
                             renderBackground();
@@ -1555,7 +1691,6 @@ function renderGame() {
                 }
                 if (players[turn-1].animals[item[0][0]] >= item[0][1]) {
                     imageButton("arrow", startX+buttonSize*indexX*5+buttonSize*2, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
-                        shopPage = 1;
                         players[turn-1].animals[item[0][0]]-=item[0][1];
                         if (item[0][0] == "celestialTalisman") celestialTalismanUsed = true;
                         if (actionAnimals.includes(item[1][0])) {
@@ -1624,7 +1759,6 @@ function renderGame() {
                     }, ["snake", "fox", "wolf", "otter"].includes(item[1][0]) ? "arrowShadowHover" : item[0][0] == "celestialTalisman" ? "arrowCelestialHover" : "arrowHover");
                 } else if (players[turn-1].animals[item[0][0]]+1 >= item[0][1] && aquaticAnimals.includes(item[0][0]) && players[turn-1].animals["frog"] > 0) {
                     imageButton("arrowFrog", startX+buttonSize*indexX*5+buttonSize*2, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
-                        shopPage = 1;
                         players[turn-1].animals[item[0][0]]-=item[0][1]-1;
                         players[turn-1].animals["frog"]--;
                         players[turn-1].animals[item[1][0]]+=item[1][1];
@@ -1643,6 +1777,9 @@ function renderGame() {
             })
             indexY++;
             textButton("Continue", width/2+playerWidth/2-ctx.measureText("Continue").width/2, startY+buttonSize*indexY*1.5, "rgb(255, 255, 255)", () => {
+                shopPage = 1;
+                prevShopPages = 0;
+                shopPages = 0;
                 activity = "tribute";
                 if (addons["pond"] && players[turn-1].animals["pond"] > 0) activity = "pond";
                 renderBackground();
@@ -2343,7 +2480,7 @@ function initGame() {
                 "sheep","sheep","pig","pig","cow","fox"];
     }
     if (addons["lettuce"] && addons["stork"]) {
-        storkDie = ["stork","stork","stork","antiStork","antiWater","water","water","water"]
+        storkDie = ["stork","stork","stork","stork","stork","antiStork","antiWater","water","water","water","water","water"]
     } else if (addons["lettuce"]) {
         storkDie = ["antiWater","antiWater","empty","water","water","water"]
     }
@@ -2372,7 +2509,19 @@ function renderChooseAddons() {
     let amount = Math.ceil(Object.keys(addons).length/2);
     let size = width/(amount*1.5+0.5);
     for (let [addon, bool] of Object.entries(addons)) {
-        imageTextButton(addon == "bee" ? "bear" : addon, bool ? "  V" : "  X", size/2+size*indexX*3/2, height/2-size*5/4+size*indexY*3/2, size, bool ? "rgb(0, 255, 0)" : "rgb(255, 0, 0)", () => {
+        let addonImage;
+        switch (addon) {
+            case "bee":
+                addonImage = "bear";
+                break;
+            case "lettuce":
+                addonImage = "pumpkin";
+                break;
+            default:
+                addonImage = addon;
+                break;
+        }
+        imageTextButton(addonImage, bool ? "  V" : "  X", size/2+size*indexX*3/2, height/2-size*5/4+size*indexY*3/2, size, bool ? "rgb(0, 255, 0)" : "rgb(255, 0, 0)", () => {
             addons[addon] = !addons[addon];
             localStorage.setItem("addons", JSON.stringify(addons));
             renderBackground();
