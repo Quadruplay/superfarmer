@@ -823,7 +823,7 @@ function renderPlayers(players) {
                 quantifier = addons["shadowBeast"];
             } else if (["cod","salmon","duck","beaver","hippocampus","turtle","frog"].includes(animal)) {
                 quantifier = addons["pond"];
-            } else if (animal == "water") {
+            } else if (["water", "stick", "hay", "pumpkin", "scarecrow", "crow"].includes(animal)) {
                 quantifier = addons["lettuce"];
             } else if ([ "milk", "mouse", "cheddar", "brie", "gouda", "blueCheese" ].includes(animal)) {
                 quantifier = addons["cheese"];
