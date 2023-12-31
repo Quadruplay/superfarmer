@@ -133,7 +133,6 @@ class Player {
             "duck": false,
             "beaver": false,
         }
-        //rescue scarecrow from depths of github
         this.animals = {
             "chicken": 0,
             "rooster": 0,
@@ -607,6 +606,7 @@ function removeListeners() {
     canvas = canvasCopy;
     ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
+    ctx.lineWidth = 2;
 }
 
 function image(image, x, y, size) {
@@ -786,13 +786,22 @@ function renderPlayers(players) {
                 ctx.fillStyle = "rgb(127, 0, 127)";
                 break;
         }
+        let playerColor = ctx.fillStyle;
+        if (index == turn-1) {
+            ctx.fillStyle = "rgb(255, 255, 255)";
+        }
         ctx.fillRect(0, playerHeight*index, playerWidth, playerHeight);
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.strokeStyle = "rgb(0, 0, 0)";
-        ctx.strokeRect(0, playerHeight*index, playerWidth, playerHeight);
+        if (index == turn-1) {
+            ctx.strokeRect(0, playerHeight*index, playerWidth, 0);
+            ctx.strokeRect(0, playerHeight*turn, 0, playerHeight);
+        } else {
+            ctx.strokeRect(0, playerHeight*index, playerWidth, playerHeight);
+        }
         ctx.font = String(animalSize/2)+"px pixel";
         if (index == turn-1) {
-            ctx.fillStyle = "rgb(255, 255, 0)";
+            ctx.fillStyle = playerColor;
         }
         ctx.fillText(player.name, ctx.measureText("M").width*0.5, playerHeight*index+ctx.measureText("M").width*1.5);
         ctx.fillStyle = "rgb(0, 0, 0)";
@@ -853,7 +862,9 @@ function renderPlayArea() {
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.strokeStyle = "rgb(0, 0, 0)";
     ctx.fillRect(playerWidth, 0, width-playerWidth, height);
-    ctx.strokeRect(playerWidth, 0, width-playerWidth, height);
+    ctx.strokeRect(0, 0, width, height);
+    ctx.strokeRect(playerWidth, 0, 0, height/4*(turn-1));
+    ctx.strokeRect(playerWidth, height/4*turn, 0, height/4*(4-turn));
     let color = "rgb(0, 0, 0)";
     switch (turn) {
         case 1:
@@ -2817,6 +2828,7 @@ addEventListener("resize", async function() {
     ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
     ctx.font = "1px pixel";
+    ctx.lineWidth = 2;
     await document.fonts.load("1px pixel");
     if (width >= height) {
         switch (state) {
