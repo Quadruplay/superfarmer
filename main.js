@@ -17,7 +17,8 @@ async function loadImages() {
     "nightmare","arrowFlip","arrowNoFlip","arrowHoverFlip","lettuce","celestialDeer", "otter", "beaver", "hippocampus",
     "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
     "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
-    "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix", "scarecrow", "crow", "pumpkin", "stick", "hay"];
+    "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix", "scarecrow", "crow", "pumpkin", "stick", "hay",
+    "coop", "wood"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -37,7 +38,7 @@ async function loadImages() {
     });
 }
 
-let breed1, breed2, breed3, breed4;
+let breed1, breed2, breed3, breed4, breed5;
 
 let state = "menu";
 let playerAmount = 0;
@@ -118,6 +119,8 @@ let animalInstructions = {
     "iceWolf": "Replaces the wolf. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon.",
     "seal": "Replaces the otter. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon adn the Pond Addon.",
     "phoenix": "Protects against freezing. Requires the Snow Fox Addon.",
+    "coop": "Triggers chicken breeding every turn and removes chickens from the breeding die. Requires the Chicken Addon.",
+    "wood": "Required to build the coop. Requires the Chicken Addon.",
 }
 class Player {
     constructor(name) {
@@ -134,6 +137,8 @@ class Player {
             "beaver": false,
         }
         this.animals = {
+            "wood": 0,
+            "coop": 0,
             "chicken": 0,
             "rooster": 0,
             "rabbit": 0,
@@ -188,6 +193,8 @@ class Player {
             this.animals["rabbit"] = 1;
         }
         this.animalCap = {
+            "wood": -1,
+            "coop": -1,
             "chicken": 32,
             "rabbit": 20,
             "sheep": 12,
@@ -254,6 +261,7 @@ class Player {
             for (let [animal, amount] of Object.entries(capObject)) {
                 this.animalCap[animal] = Math.max(0, amount-Math.floor(this.animals["squirrel"]/4)+4*this.animals["donkey"]-2*this.animals["nightmare"]);
             }
+            if (this.animals["coop"] > 0) this.animalCap["chicken"]+=8;
             this.animalCap["milk"] = 4 + this.animals["mouse"];
         }
         this.honeyDie = ["empty", "empty", "empty", "empty"]
@@ -438,9 +446,11 @@ class Player {
             }
             breedingObject[die1]++;
             breedingObject[die2]++;
-            if (this.freeze["chicken"]) breedingObject["chicken"] = 0;
-            if (this.freeze["rabbit"]) breedingObject["rabbit"] = 0;
+            if (this.animals["coop"] > 0) breedingObject["chicken"]++;
             breedingObject["pig"] += this.animals["boar"];
+            for (let [animal, amount] of Object.entries(breedingObject)) {
+                if (this.freeze[animal]) breedingObject[animal] = 0;
+            }
             let goudaBreed = false;
             switch (breedType) {
                 case "farm":
@@ -488,7 +498,7 @@ class Player {
                         breedingObject[animal]+=2*this.animals["unicorn"]+2*this.animals["lettuce"]+2*this.animals["brie"];
                         if (animal == "chicken") breedingObject[animal]+=2*roosterTemp;
                         breedingObject[animal]=Math.max(2, breedingObject[animal]-Math.floor(this.animals["crow"]/4));
-                        !breed1 ? breed1 = animal : !breed2 ? breed2 = animal : !breed3 ? breed3 = animal : breed4 = animal;
+                        !breed1 ? breed1 = animal : !breed2 ? breed2 = animal : !breed3 ? breed3 = animal : !breed4 ? breed4 = animal : breed5 = animal;
                     }
                     if (this.animals[animal] != "goat") this.animals[animal]+=Math.floor(breedingObject[animal]/2);
                 }
@@ -811,7 +821,7 @@ function renderPlayers(players) {
             let quantifier = true;
             if (Object.keys(addons).includes(animal)) {
                 quantifier = addons[animal];
-            } else if (animal == "rooster") {
+            } else if (animal == "rooster" || animal == "wood" || animal == "coop") {
                 quantifier = addons["chicken"];
             } else if (animal == "boar" || animal == "owl") {
                 quantifier = addons["skunk"];
@@ -938,7 +948,19 @@ function nextTurn() {
     if (addons["pegasus"] && players[turn-1].animals["donkey"] == 0) players[turn-1].animals["squirrel"]++;
     if (addons["lettuce"] && players[turn-1].animals["scarecrow"] == 0) players[turn-1].animals["crow"]++;
     if (addons["cheese"]) players[turn-1].animals["milk"]+=Math.min(4, players[turn-1].animals["cow"]);
+    if (players[turn-1].animals["coop"] == 1) {
+        die1 = ["rabbit","rabbit","rabbit","rabbit","rabbit","rabbit",
+            "sheep","sheep","sheep","pig","horse","wolf"];
+        die2 = ["rabbit","rabbit","rabbit","rabbit","rabbit","rabbit",
+            "sheep","sheep","pig","pig","cow","fox"];
+    } else if (addons["chicken"]) {
+        die1 = ["chicken","chicken","chicken","chicken","rabbit","rabbit",
+                "rabbit","sheep","sheep","pig","horse","wolf"];
+        die2 = ["chicken","chicken","chicken","chicken","rabbit","rabbit",
+                "sheep","sheep","pig","pig","cow","fox"];
+    }
     players[turn-1].prune();
+    if (activity == "global") turn = 0;
     renderBackground();
     renderGame();
 }
@@ -1224,19 +1246,20 @@ function renderGame() {
                 players[turn-1].freeze[roll2] || animalList.push(roll2);
             }
             if (players[turn-1].animals["boar"] > 0 && !animalList.includes("pig")) {
-                animalList.push("pig");
+                players[turn-1].freeze["pig"] || animalList.push("pig");
             }
             temp = true;
             for (let animal of ["chicken", "rabbit", "sheep", "pig", "cow", "horse"]) {
                 if (temp && players[turn-1].animals["gouda"] > 0) {
                     if (!animalList.includes(animal) && !players[turn-1].freeze[animal]) {
-                        if ((animal == "chicken" && addons["chicken"]) || animal != "chicken") {
+                        if ((animal == "chicken" && addons["chicken"] && players[turn-1].animals["coop"] == 0) || animal != "chicken") {
                             animalList.push(animal);
                             temp = false;
                         }
                     }
                 }
             }
+            if (players[turn-1].animals["coop"] > 0) players[turn-1].freeze["chicken"] || animalList.push("chicken");
             if (animalList.length == 0) {
                 activity = "breedResult";
                 renderBackground();
@@ -1422,6 +1445,7 @@ function renderGame() {
                 if (breed2) shop.push([["stork", 2], [breed2, 1], "leftToRight"]);
                 if (breed3) shop.push([["stork", 2], [breed3, 1], "leftToRight"]);
                 if (breed4) shop.push([["stork", 2], [breed4, 1], "leftToRight"]);
+                if (breed5) shop.push([["stork", 2], [breed5, 1], "leftToRight"]);
             }
             if (addons["blackSheep"]) {
                 if (players[turn-1].animals["blackSheep"] > 0) {
@@ -1448,7 +1472,7 @@ function renderGame() {
                 shop.push([["water", 2], ["lettuce", 1], "leftToRight"]);
             }
             if (players[turn-1].animals["crow"] > 0) {
-                shop.push([["rabbit", 1], ["crow", Math.max(-4, players[turn-1].animals["crow"]*-1)], "leftToRight"]);
+                shop.push([["water", 1], ["crow", Math.max(-4, players[turn-1].animals["crow"]*-1)], "leftToRight"]);
             }
             if (addons["eagle"] && !bagBought) {
                 shop.push([["sheep", 1], ["bag", 1], "leftToRight"]);
@@ -1553,6 +1577,10 @@ function renderGame() {
             if (addons["lettuce"] && players[turn-1].animals["scarecrow"] == 0) {
                 craftingRecipes++
                 craftingArray.push(["crafting", ["","pumpkin",""], ["stick","hay","stick"], ["","stick",""], "scarecrow", ["water", 1, "stick"], ["water", 3, "hay"], ["water", 4, "pumpkin"]]);
+            }
+            if (addons["chicken"] && players[turn-1].animals["coop"] == 0) {
+                craftingRecipes++
+                craftingArray.push(["crafting", ["wood","wood","wood"], ["wood","rooster","wood"], ["wood","","wood"], "coop", [addons["pond"] ? "beaver" : "pig", 1, "wood"]]);
             }
             if (shopPage > shopPages) {
                 shop = craftingArray[shopPage-shopPages-1];
@@ -2471,6 +2499,7 @@ function renderGame() {
                             player.prune();
                         });
                 }
+                turn = 1;
                 renderBackground();
                 renderGame();
             });
@@ -2479,6 +2508,7 @@ function renderGame() {
 }
 
 function initGame() {
+    if (playerAmount == 1) addons["cat"] = false;
     for (let i = 0; i < playerAmount; i++) {
         players.push(new Player("Player "+(i+1)));
         players.forEach((player) => {
@@ -2521,6 +2551,7 @@ function renderChooseAddons() {
     let amount = Math.ceil(Object.keys(addons).length/2);
     let size = width/(amount*1.5+0.5);
     for (let [addon, bool] of Object.entries(addons)) {
+        if (playerAmount == 1 && addon == "cat") continue;
         let addonImage;
         switch (addon) {
             case "bee":
