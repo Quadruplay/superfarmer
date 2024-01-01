@@ -6,9 +6,9 @@ let height = window.innerHeight;
 canvas.setAttribute("width", window.innerWidth);
 canvas.setAttribute("height", window.innerHeight);
 
-let singleEnabled = false;
+let singleEnabled = !false;
 
-const version = "1w24a";
+const version = "1w24b";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -16,7 +16,7 @@ if (window.location.href.includes("?eraseCache=true")) {
 let cachedVersion = localStorage.getItem("version");
 if (cachedVersion !== version) {
     localStorage.setItem("version", version);
-    window.location = window.location.href+'?eraseCache=true';
+    window.location = window.location.href+"?eraseCache=true";
 }
 
 let images = {};
@@ -182,6 +182,7 @@ class Player {
             "owl": 0,
             "bee": 0,
             "honey": 0,
+            "bonusTurn": 0,
             "water": 0,
             "stick": 0,
             "lettuce": 0,
@@ -204,6 +205,7 @@ class Player {
             this.animals["rabbit"] = 1;
         }
         this.animalCap = {
+            "bonusTurn": -1,
             "wood": -1,
             "coop": -1,
             "chicken": 32,
@@ -356,7 +358,9 @@ class Player {
             }
         }
         this.foxAttack = () => {
-            if (this.animals["smallDog"] > 0) {
+            if (this.animals["blueCheese"] > 0) {
+                this.animals["blueCheese"]--;
+            } else if (this.animals["smallDog"] > 0) {
                 this.animals["smallDog"]--;
             } else {
                 this.animals["chicken"] = Math.min(1, this.animals["chicken"]);
@@ -376,7 +380,9 @@ class Player {
             }
         }
         this.wolfAttack = () => {
-            if (this.animals["bigDog"] > 0) {
+            if (this.animals["blueCheese"] > 0) {
+                this.animals["blueCheese"]--;
+            } else if (this.animals["bigDog"] > 0) {
                 this.animals["bigDog"]--;
             } else {
                 this.animals["sheep"] = 0;
@@ -403,7 +409,9 @@ class Player {
             }
         }
         this.otterAttack = () => {
-            if (this.animals["turtle"] > 0) {
+            if (this.animals["blueCheese"] > 0) {
+                this.animals["blueCheese"]--;
+            } else if (this.animals["turtle"] > 0) {
                 this.animals["turtle"]--;
             } else {
                 this.animals["cod"] = Math.min(1, this.animals["cod"]);
@@ -507,6 +515,7 @@ class Player {
                 if (animal != "fox" && animal != "wolf" && animal != "otter") {
                     if (Math.floor(breedingObject[animal]/2) > 0) {
                         breedingObject[animal]+=2*this.animals["unicorn"]+2*this.animals["lettuce"]+2*this.animals["brie"];
+                        if (playerAmount == 1) breedingObject[animal]+=2*this.animals["bonusTurn"];
                         if (animal == "chicken") breedingObject[animal]+=2*roosterTemp;
                         breedingObject[animal]=Math.max(2, breedingObject[animal]-Math.floor(this.animals["crow"]/4));
                         !breed1 ? breed1 = animal : !breed2 ? breed2 = animal : !breed3 ? breed3 = animal : !breed4 ? breed4 = animal : breed5 = animal;
@@ -551,7 +560,7 @@ let addons = {
     "skunk": false,         // done
     "bee": false,           // done
     "pegasus": false,       // done
-    "shadowBeast": false,   // done
+    "shadowBeast": false,   // done?
     "lettuce": false,       // done
     "pond": false,          // done
     "alpaca": false,        // done
@@ -619,6 +628,10 @@ function renderEnd() {
 function renderBackground() {
     ctx.fillStyle = "rgb(0, 127, 0)";
     ctx.fillRect(0, 0, width, height);
+    ctx.font = "1px pixel";
+    ctx.font = String(width/ctx.measureText(version).width/20)+"px pixel";
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillText(version, width-ctx.measureText(version).width, height);
 }
 
 function removeListeners() {
@@ -836,7 +849,7 @@ function renderPlayers(players) {
                 quantifier = addons["chicken"];
             } else if (animal == "boar" || animal == "owl") {
                 quantifier = addons["skunk"];
-            } else if (animal == "honey") {
+            } else if (animal == "honey" || animal == "bonusTurn") {
                 quantifier = addons["bee"];
             } else if (animal == "donkey" || animal == "squirrel") {
                 quantifier = addons["pegasus"];
@@ -886,6 +899,7 @@ function renderPlayArea() {
     ctx.strokeRect(0, 0, width, height);
     ctx.strokeRect(playerWidth, 0, 0, height/4*(turn-1));
     ctx.strokeRect(playerWidth, height/4*turn, 0, height/4*(4-turn));
+    ctx.strokeRect(0, height/4*playerAmount, playerWidth, height/4*(4-playerAmount));
     let color = "rgb(0, 0, 0)";
     switch (turn) {
         case 1:
@@ -930,7 +944,9 @@ function colorButton(color, x, y, width, height, callback) {
 }
 
 function nextTurn() {
+    bagBought = false;
     if (doBonusTurn) {
+        players[turn-1].animals["bonusTurn"]--;
         doBonusTurn = false;
         isBonusTurn = true;
     } else {
@@ -946,14 +962,15 @@ function nextTurn() {
             activity = "global";
         }
     }
-    while (players[turn-1].animals["blueCheese"] > 0 && turn <= playerAmount) {
+    while (players[turn-1].animals["blueCheese"] > 0 && turn <= playerAmount && playerAmount > 1) {
         players[turn-1].animals["blueCheese"]--;
         turn++;
-    }
-    if (turn > playerAmount) {
-        turn = 1;
-        if (addons["stork"] || addons["lettuce"]) {
-            activity = "global";
+        if (turn > playerAmount) {
+            turn = 1;
+            if (addons["stork"] || addons["lettuce"]) {
+                activity = "global";
+            }
+            break;
         }
     }
     if (addons["pegasus"] && players[turn-1].animals["donkey"] == 0) players[turn-1].animals["squirrel"]++;
@@ -1134,6 +1151,14 @@ function renderGame() {
                         index++;
                         roll1 = die1[Math.floor(Math.random()*die1.length)];
                         roll2 = die2[Math.floor(Math.random()*die2.length)];
+                        if (players[turn-1].animals["shadowTalisman"] > 0) {
+                            roll1 = die1.at(Math.floor(Math.min(Math.random()*die1.length, Math.random()*die1.length))-1);
+                            roll2 = die2.at(Math.floor(Math.min(Math.random()*die2.length, Math.random()*die2.length))-1);
+                        }
+                        if (players[turn-1].animals["celestialTalisman"] > 0) {
+                            roll1 = die1.at(Math.floor(Math.max(Math.random()*die1.length, Math.random()*die1.length))-1);
+                            roll2 = die2.at(Math.floor(Math.max(Math.random()*die2.length, Math.random()*die2.length))-1);
+                        }
                         renderBackground();
                         renderGame();
                         if (index >= 100) {
@@ -1161,7 +1186,6 @@ function renderGame() {
                         roll2 = die2[Math.floor(Math.random()*die2.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = (addons["badger"] && players[turn-1].animals["badger"] > 0) ? "badger" : "breedResult";
                             renderBackground();
@@ -1192,7 +1216,6 @@ function renderGame() {
                         roll1 = die1[Math.floor(Math.random()*die1.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = (addons["badger"] && players[turn-1].animals["badger"] > 0) ? "badger" : "breedResult";
                             renderBackground();
@@ -1216,7 +1239,6 @@ function renderGame() {
                         roll2 = die2[Math.floor(Math.random()*die2.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = (addons["badger"] && players[turn-1].animals["badger"] > 0) ? "badger" : "breedResult";
                             renderBackground();
@@ -1308,6 +1330,7 @@ function renderGame() {
                 players[turn-1].animals["lettuce"] *= 0;
                 players[turn-1].animals["brie"] *= 0;
                 players[turn-1].animals["gouda"] *= 0;
+                if (playerAmount == 1) players[turn-1].animals["bonusTurn"] *= 0;
                 renderBackground();
                 renderGame();
             });
@@ -1326,7 +1349,6 @@ function renderGame() {
                         beeOutput = players[turn-1].honeyDie[Math.floor(Math.random()*players[turn-1].honeyDie.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = "beeResult";
                             renderBackground();
@@ -1357,7 +1379,7 @@ function renderGame() {
                     text = "You got 1 honey!";
                     break;
                 case "bonusTurn":
-                    text = "You got a bonus turn!";
+                    text = playerAmount == 1 ? "You will get a higher breeding yield!" : "You got a bonus turn!";
                     break;
             }
             renderLine(text, 1, "rgb(0, 0, 0)");
@@ -1371,7 +1393,10 @@ function renderGame() {
                         players[turn-1].prune();
                         break;
                     case "bonusTurn":
-                        doBonusTurn = true;
+                        if (playerAmount != 1) {
+                            doBonusTurn = true;
+                        }
+                        players[turn-1].animals["bonusTurn"]++;
                         break;
                 }
                 renderBackground();
@@ -1418,7 +1443,14 @@ function renderGame() {
             shop = [];
             if (addons["chicken"]) shop.push([["chicken", 4], ["rabbit", 1], "twoSided"]);
             shop.push([["rabbit", 6], ["sheep", 1], "twoSided"])
-            if (players[turn-1].animals["pig"] == "goat") {
+            if (players[turn-1].animals["pig"] == "goat" && players[turn-1].animals["cow"] == "goat" && players[turn-1].animals["horse"] == "goat") {
+                if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
+                if (players[turn-1].animals["bigDog"] < 2) shop.push([["sheep", 6], ["bigDog", 1], "leftToRight"]);
+            } else if (players[turn-1].animals["cow"] == "goat" && players[turn-1].animals["horse"] == "goat") {
+                shop.push([["sheep", 2], ["pig", 1], "twoSided"]);
+                if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
+                if (players[turn-1].animals["bigDog"] < 2) shop.push([["pig", 3], ["bigDog", 1], "leftToRight"]);
+            } else if (players[turn-1].animals["pig"] == "goat") {
                 shop.push([["sheep", 6], ["cow", 1], "twoSided"]);
                 shop.push([["cow", 2], ["horse", 1], "twoSided"]);
                 if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
@@ -1512,7 +1544,7 @@ function renderGame() {
                         }
                     }
                 })
-                if (playerList.length > 0) {
+                if (playerList.length > 0 && playerAmount > 1) {
                     shop.push([["sheep", 1], ["goat", 1], "leftToRight"]);
                 }
                 if (players[turn-1].animals["pig"] == "goat" || players[turn-1].animals["cow"] == "goat" || players[turn-1].animals["horse"] == "goat") {
@@ -1541,13 +1573,13 @@ function renderGame() {
             if (addons["alpaca"] && players[turn-1].animals["alpaca"] == 0) {
                 shop.push([["cow", 1], ["alpaca", 1], "leftToRight"]);
             }
-            if (addons["shadowBeast"] && players[turn-1].animals["shadowTalisman"] > 0 && !shadowTalismanUsed) {
+            if (addons["shadowBeast"] && players[turn-1].animals["shadowTalisman"] > 0 && !shadowTalismanUsed && playerAmount > 1) {
                 shop.push([["shadowTalisman", 0], ["snake", 1], "leftToRight"]);
                 shop.push([["smallDog", 1], ["fox", 1], "leftToRight"]);
                 shop.push([["bigDog", 1], ["wolf", 1], "leftToRight"]);
                 if (addons["pond"] && players[turn-1].animals["pond"] > 0) shop.push([["turtle", 1], ["otter", 1], "leftToRight"]);
             }
-            if (addons["shadowBeast"] && players[turn-1].animals["celestialTalisman"] > 0 && !celestialTalismanUsed) {
+            if (addons["shadowBeast"] && players[turn-1].animals["celestialTalisman"] > 0 && !celestialTalismanUsed && playerAmount > 1) {
                 shop.push([["celestialTalisman", 0], ["rabbit", 1], "leftToRight"]);
                 if (players[turn-1].animals["smallDog"] < 2) shop.push([["celestialTalisman", 0], ["smallDog", 1], "leftToRight"]);
                 if (players[turn-1].animals["bigDog"] < 2) shop.push([["celestialTalisman", 0], ["bigDog", 1], "leftToRight"]);
@@ -1567,7 +1599,7 @@ function renderGame() {
                         }
                     }
                 });
-                if (players[turn-1].animalCap["milk"] >= 7 && playerList.length != 0) shop.push([["milk", 7], ["blueCheese", 1], "leftToRight"]);
+                if (players[turn-1].animalCap["milk"] >= 7 && (playerList.length != 0 || playerAmount == 1) && players[turn-1].animals["blueCheese"] == 0) shop.push([["milk", 7], ["blueCheese", 1], "leftToRight"]);
                 if (players[turn-1].animalCap["milk"] >= 8) shop.push([["milk", 8], ["gouda", 1], "leftToRight"]);
             }
             if (addons["snowFox"] && players[turn-1].animals["phoenix"] < 4) {
@@ -1767,9 +1799,13 @@ function renderGame() {
                                     break;
                                 case "goat":
                                     if (item[1][1] == "X") {
-                                        if (players[turn-1].animals["pig"] == "goat") players[turn-1].animals["pig"] = 0;
-                                        if (players[turn-1].animals["cow"] == "goat") players[turn-1].animals["cow"] = 0;
-                                        if (players[turn-1].animals["horse"] == "goat") players[turn-1].animals["horse"] = 0;
+                                        if (players[turn-1].animals["pig"] == "goat") {
+                                            players[turn-1].animals["pig"] = 0;
+                                        } else if (players[turn-1].animals["cow"] == "goat") {
+                                            players[turn-1].animals["cow"] = 0;
+                                        } else if (players[turn-1].animals["horse"] == "goat") {
+                                            players[turn-1].animals["horse"] = 0;
+                                        }
                                     } else {
                                         activity = "goatPlayer"
                                     }
@@ -1799,7 +1835,7 @@ function renderGame() {
                                     players[turn-1].setCaps();
                                     break;
                                 case "blueCheese":
-                                    activity = "blueCheese";
+                                    playerAmount == 1 ? players[turn-1].animals["blueCheese"]++ : activity = "blueCheese";
                                     break;
                             }
                         } else {
@@ -1833,6 +1869,7 @@ function renderGame() {
                 shopPages = 0;
                 activity = "tribute";
                 if (addons["pond"] && players[turn-1].animals["pond"] > 0) activity = "pond";
+                players[turn-1].prune();
                 renderBackground();
                 renderGame();
             });
@@ -1942,7 +1979,6 @@ function renderGame() {
                         pondRoll2 = pondDie2[Math.floor(Math.random()*pondDie2.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = "pondResult";
                             renderBackground();
@@ -1968,7 +2004,6 @@ function renderGame() {
                         pondRoll2 = pondDie2[Math.floor(Math.random()*pondDie2.length)];
                         renderBackground();
                         renderGame();
-                        console.log(index)
                         if (index >= 100) {
                             activity = "pondResult";
                             renderBackground();
@@ -2033,7 +2068,7 @@ function renderGame() {
             break;
         case "bagResult":
             text = "";
-            if (bagRoll == "eagle") {
+            if (bagRoll == "eagle" && playerAmount > 1) {
                 playerList = [];
                 players.forEach((player, index) => {
                     if (index+1 != turn) {
@@ -2057,7 +2092,7 @@ function renderGame() {
                     text = "You gain a rabbit!";
                     break;
                 case "eagle":
-                    text = "You may steal an animal from another player!";
+                    text = playerAmount > 1 ? "You may steal an animal from another player!" : "The eagle brings you a " + players[turn-1].tribute.animal + "!";
                     break;
             }
             renderLine(text, 1, "rgb(0, 0, 0)");
@@ -2074,7 +2109,7 @@ function renderGame() {
                         players[turn-1].animals["rabbit"]++;
                         break;
                     case "eagle":
-                        activity = "eaglePlayer";
+                        playerAmount > 1 ? activity = "eaglePlayer" : players[turn-1].animals[players[turn-1].tribute.animal]++;
                         break;
                 }
                 renderBackground();
@@ -2544,6 +2579,11 @@ function initGame() {
         images["fox"] = images["snowFox"];
         images["wolf"] = images["iceWolf"];
         images["otter"] = images["seal"];
+    }
+    if (playerAmount == 1 && addons["goat"]) {
+        players[0].animals["pig"]="goat";
+        players[0].animals["cow"]="goat";
+        players[0].animals["horse"]="goat";
     }
     turn = 0;
     nextTurn();
