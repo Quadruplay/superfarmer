@@ -16,6 +16,7 @@ function checkVersion() {
         window.location = window.location.href+'?eraseCache=true';
     }
 }
+checkVersion();
 
 let images = {};
 
