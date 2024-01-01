@@ -9,14 +9,15 @@ canvas.setAttribute("height", window.innerHeight);
 let singleEnabled = false;
 
 const version = "1w24a";
-function checkVersion() {
-    let cachedVersion = localStorage.getItem("version");
-    if (cachedVersion !== version) {
-        localStorage.setItem("version", version);
-        window.location = window.location.href+'?eraseCache=true';
-    }
+
+if (window.location.href.includes("?eraseCache=true")) {
+    window.location = window.location.href.split("?")[0];
 }
-checkVersion();
+let cachedVersion = localStorage.getItem("version");
+if (cachedVersion !== version) {
+    localStorage.setItem("version", version);
+    window.location = window.location.href+'?eraseCache=true';
+}
 
 let images = {};
 
