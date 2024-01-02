@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24c";
+const version = "1w24d";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -2970,7 +2970,7 @@ let animalInstructions = {
         "name": "Goat", 
         "description": "Costs 1 sheep to be sent to another player's empty pen, blocking its corresponding animal for being gained by breeding or trading. Can be gotten rid of by paying 3 sheep or being attacked by a wolf without a big dog. In single player, pig, cow, and horse pens are occupied by it at the beginning of the game and wolf attack don't work against it.",
         "cap": "none",
-        "type": "Pest"
+        "type": "Debuffing"
     },
     "cat": {
         "name": "Cat", 
@@ -3042,7 +3042,7 @@ let animalInstructions = {
         "name": "Squirrel", 
         "description": "Decreases progression animals' caps by 1 for every 4 squirrels on the farm.",
         "cap": 16,
-        "type": "Pest"
+        "type": "Debuffing"
     },
     "donkey": {
         "name": "Donkey", 
@@ -3132,7 +3132,7 @@ let animalInstructions = {
         "name": "Crow", 
         "description": "Decreases breeding yields by 1 for every 4 crows.",
         "cap": 16,
-        "type": "Pest"
+        "type": "Debuffing"
     },
     "pond": {
         "name": "Pond", 
@@ -3287,10 +3287,10 @@ function renderAnimalInstructions() {
     let name = animalInstructions[currentAnimalInstruction].name;
     let cap = "cap: "+String(animalInstructions[currentAnimalInstruction].cap);
     let type = "type: "+String(animalInstructions[currentAnimalInstruction].type);
-    ctx.fillText(name, width-buttonSize*3-ctx.measureText(name).width, buttonSize*7/4);
+    ctx.fillText(name, buttonSize*3, buttonSize*7/4);
     ctx.font = String(buttonSize/3) + "px pixel";
     let textArr = animalInstructions[currentAnimalInstruction].description.split(" ");
-    let lineArr = [];
+    let lineArr = [""];
     while (textArr.length > 0) {
         let line = "";
         while (ctx.measureText(line+textArr[0]).width < width-buttonSize*6 && textArr.length > 0) {
