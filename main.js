@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24b";
+const version = "1w24c";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -67,72 +67,7 @@ let aquaticAnimals = ["cod", "salmon", "duck", "beaver"];
 let pondDie1 = ["cod", "cod", "cod", "cod", "salmon", "salmon", "salmon", "duck", "beaver", "otter"];
 let pondDie2 = ["cod", "cod", "cod", "cod", "cod", "salmon", "salmon", "duck", "duck", "hippocampus"];
 let winner = "";
-let animalInstructions = {
-    "chicken": "Cheaper than rabbits. Requires the Chicken Addon.",
-    "rooster": "Improves chicken breeding yields by 1 for every 3 chickens. Requires the Chicken Addon.",
-    "rabbit": "The cheapest animal available on farms.",
-    "sheep": "The 2nd cheapest animal available on farms after the rabbit.",
-    "blackSheep": "A variant of sheep. Can't breed, but immune to predator attacks. Requires the Black Sheep Addon.",
-    "pig": "The cheapest animal available on farms after the sheep.",
-    "cow": "The 2nd most expensive animal available on farms after the horse.",
-    "horse": "The most expensive animal available on farms.",
-    "smallDog": "Protects against fox attacks.",
-    "bigDog": "Protects against wolf attacks.",
-    "fox": "Eats chickens and rabbits. Leaves one animal alive.",
-    "wolf": "Eats sheep, pigs, and cows.",
-    "stork": "Can be used to get additional animals from breeding. Requires the Stork Addon.",
-    "badger": "Can be used to get additional animals from breeding. Requires the Badger Addon.",
-    "goat": "Can be used to block another player's empty animal pen. Requires the Goat Addon.",
-    "cat": "Can be used to scare away another player's dogs. Requires the Cat Addon.",
-    "bag": "Drops a snake, a rabbit, a fox, or an eagle. Requires the Eagle Addon.",
-    "eagle": "Can be used to steal an animal from another player's farm. Requires the Eagle Addon.",
-    "snake": "Eats 1 rabbit. Requires the Eagle Addon, the Skunk Addon, or the Shadow Beast Addon.",
-    "skunk": "Makes the player lose a turn. Requires the Skunk Addon.",
-    "boar": "Triggers pig breeding regardless of the die roll. Requires the Skunk Addon.",
-    "owl": "Brings 1 rabbit at the start of the turn and protects against skunk attacks. Requires the Skunk Addon.",
-    "bee": "Produces honey. Requires the Bear Addon.",
-    "honey": "Can be used to buy rabbits, level up the bee, and protects against bear attacks. Requires the Bear Addon.",
-    "bear": "Eats the largest animal available or 3 honey. Requires the Bear Addon.",
-    "squirrel": "Decreases the animal caps by 1 for every 4 squirrels. Requires the Pegasus Addon.",
-    "donkey": "Increases animal caps by 4 and stops squirrels from spawning. Requires the Pegasus Addon.",
-    "pegasus": "More expensive than the horse. Requires the Pegasus Addon.",
-    "shadowBeast": "Eats the largest animal available and grants the shadow talisman. Requires the Shadow Beast Addon.",
-    "celestialDeer": "Grants the player the animal currently required for tribute or a celestial talisman. Requires the Shadow Beast Addon.",
-    "unicorn": "Increases breeding yields by 1. Requires the Shadow Beast Addon.",
-    "nightmare": "Decreases animal caps by 2. Requires the Shadow Beast Addon.",
-    "celestialTalisman": "Grants the player free protective animals and rabbits. Stops nightmare attacks, protects against shadow beast attacks, and doubles the chance of encountering a celestial deer. Requires the Shadow Beast Addon.",
-    "shadowTalisman": "Lets the player exchange their protective animals to send predators to another player's farm. Stops unicorn encounters, nullifies celestial deer gifts, doubles the chance of encountering a shadow beast. Makes the shadow beast consume the smallest rather than the largest animal available. Requires the Shadow Beast Addon.",
-    "water": "Can be used to buy lettuce. Requires the Pumpkin Addon.",
-    "stick": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
-    "lettuce": "Increases breeding yields by 1. Requires the Pumpkin Addon.",
-    "hay": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
-    "pumpkin": "Used to construct the scarecrow. Requires the Pumpkin Addon.",
-    "scarecrow": "Stops crows from spawning. Requires the Pumpkin Addon.",
-    "crow": "Decreases breeding yields by 1 for every 4 crows to a minimum of 1. Requires the Pumpkin Addon.",
-    "pond": "Allows breeding and trading of aquatic animals. Requires the Pond Addon.",
-    "cod": "The cheapest animal available in the pond. Requires the Pond Addon.",
-    "salmon": "The 2nd cheapest animal available in the pond. Requires the Pond Addon.",
-    "duck": "The 3rd cheapest animal available in the pond. Requires the Pond Addon.",
-    "beaver": "The 2nd most expensive animal available in the pond. Requires the Pond Addon.",
-    "hippocampus": "The most expensive animal available in the pond. Requires the Pond Addon.",
-    "turtle": "Protects against otter attacks. Requires the Pond Addon.",
-    "otter": "Eats cod, salmon, duck, and beaver. Requires the Pond Addon.",
-    "frog": "Can be used to lower prices of pond trades by 1. Requires the Pond Addon.",
-    "alpaca": "Can be used to reroll one of the breeding dice. Requires the Alpaca Addon.",
-    "milk": "Produced by cows. Can be used to make cheese. Requires the Cheese Addon.",
-    "cheese": "Can be used to buy mice. Requires the Cheese Addon.",
-    "cheddar": "Can be used to buy sheep. Requires the Cheese Addon.",
-    "brie": "Can be used to increase breeding yields. Requires the Cheese Addon.",
-    "blueCheese": "Can be used to make a player lose their turn. Requires the Cheese Addon.",
-    "gouda": "Triggers breeding of the cheapest animal whose breeding hasn't been triggered in the breeding phase. Requires the Cheese Addon.",
-    "mouse": "Can be used to increase the milk cap. Requires the Cheese Addon.",
-    "snowFox": "Replaces the fox. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon.",
-    "iceWolf": "Replaces the wolf. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon.",
-    "seal": "Replaces the otter. Stops breeding of its target animals for a turn regardles of protection. Requires the Snow Fox Addon adn the Pond Addon.",
-    "phoenix": "Protects against freezing. Requires the Snow Fox Addon.",
-    "coop": "Triggers chicken breeding every turn and removes chickens from the breeding die. Requires the Chicken Addon.",
-    "wood": "Required to build the coop. Requires the Chicken Addon.",
-}
+
 class Player {
     constructor(name) {
         this.name = name;
@@ -403,7 +338,7 @@ class Player {
                 this.animals["badger"] = 1;
             }
             for (let [animal, amount] of Object.entries(this.animals)) {
-                if (amount == "goat") {
+                if (amount == "goat" && playerAmount > 1) {
                     this.animals[animal] = 0;
                 }
             }
@@ -560,9 +495,9 @@ let addons = {
     "skunk": false,         // done
     "bee": false,           // done
     "pegasus": false,       // done
-    "shadowBeast": false,   // done?
+    "shadowBeast": false,   // done
     "lettuce": false,       // done
-    "pond": false,          // done
+    "pond": false,          // done (until i get possessed and add atlantis)
     "alpaca": false,        // done
     "cheese": false,        // done
     "snowFox": false,       // done
@@ -1056,7 +991,7 @@ function renderGame() {
         case "skunkResult":
             switch (skunkRoll) {
                 case "skunk":
-                    text = players[turn-1].animals["owl"] > 0 ? "You lose your owl!" : "You lose a turn!";
+                    text = players[turn-1].animals["owl"] > 0 ? "You lose your owl!" : playerAmount > 1 ? "You lose a turn!" : "Your animals run away, repulsed by the smell!";
                     break;
                 case "snake":
                     text = "You lose a rabbit!";
@@ -1083,9 +1018,13 @@ function renderGame() {
                             players[turn-1].animals["owl"]--;
                             renderBackground();
                             renderGame();
-                        } else {
+                        } else if (playerAmount > 1) {
                             activity = "skunk";
                             nextTurn();
+                        } else {
+                            for (let animal of ["chicken", "rabbit", "sheep", "pig"]) {
+                                players[turn-1].animals[animal] = Math.max(1, players[turn-1].animals[animal]);
+                            }
                         }
                         break;
                     case "snake":
@@ -2780,6 +2719,7 @@ function renderSelectPlayersMobile() {
 }
 
 let currentAnimalInstruction = "";
+let currentInstructionSection = "";
 
 function renderInstructions() {
     let buttonSize = width/20;
@@ -2788,23 +2728,550 @@ function renderInstructions() {
         renderBackground();
         renderMenu();
     }, "arrowHoverFlip");
-    let startX = width/10;
-    let startY = width/20;
     let indexX = 0;
     let indexY = 0;
-    for (let [animal, instructions] of Object.entries(animalInstructions)) {
-        imageButton(animal, startX+buttonSize*indexX, startY+buttonSize*indexY, buttonSize, buttonSize, () => {
+    let amount = Math.ceil(Object.keys(addons).length/2)+1;
+    let size = width/(amount*1.5+0.5);
+    imageTextButton("empty", {length:4, 0:"base", 1:"", 2:"", 3:"game"}, size/2+size*indexX*3/2, height/2-size*5/4+size*indexY*3/2, size, "rgb(0, 0, 0)", () => {
+        state = "instructionChapter";
+        currentInstructionSection = "base";
+        renderBackground();
+        renderInstructionChapter();
+    });
+    indexX++;
+    for (let [addon, bool] of Object.entries(addons)) {
+        if (playerAmount == 1 && addon == "cat") continue;
+        let addonImage;
+        switch (addon) {
+            case "bee":
+                addonImage = "bear";
+                break;
+            case "lettuce":
+                addonImage = "pumpkin";
+                break;
+            default:
+                addonImage = addon;
+                break;
+        }
+        imageButton(addonImage, size/2+size*indexX*3/2, height/2-size*5/4+size*indexY*3/2, size, size, () => {
+            state = "instructionChapter";
+            currentInstructionSection = addon;
+            renderBackground();
+            renderInstructionChapter();
+        });
+        indexX++;
+        if (indexX == amount) {
+            indexX = 0;
+            indexY++;
+        }
+    }
+    // for (let [animal, instructions] of Object.entries(animalInstructions)) {
+    //     imageButton(animal, startX+buttonSize*indexX, startY+buttonSize*indexY, buttonSize, buttonSize, () => {
+    //         state = "animalInstructions";
+    //         currentAnimalInstruction = animal;
+    //         renderBackground();
+    //         renderAnimalInstructions();
+    //     });
+    //     indexX++;
+    //     if (indexX == 16) {
+    //         indexX = 0;
+    //         indexY++;
+    //     }
+    // };
+}
+
+function renderInstructionChapter() {
+    let buttonSize = width/20;
+    imageButton("arrowFlip", 0, 0, buttonSize, buttonSize, () => {
+        state = "instructions";
+        renderBackground();
+        renderInstructions();
+    }, "arrowHoverFlip");
+    ctx.font = "1px pixel";
+    ctx.font = String(width/10/ctx.measureText("Sample").width)+"px pixel";
+    let chapterHeader = "";
+    let buttonList = [];
+    switch (currentInstructionSection) {
+        case "base":
+            chapterHeader = "Base Game:";
+            buttonList = ["rabbit", "sheep", "pig", "cow", "horse", "smallDog", "bigDog", "fox", "wolf"];
+            break;
+        case "stork":
+            chapterHeader = "Stork Addon:";
+            buttonList = ["stork"];
+            break;
+        case "badger":
+            chapterHeader = "Badger Addon:";
+            buttonList = ["badger"];
+            break;
+        case "goat":
+            chapterHeader = "Goat Addon:";
+            buttonList = ["goat"];
+            break;
+        case "cat":
+            chapterHeader = "Cat Addon:";
+            buttonList = ["cat"];
+            break;
+        case "chicken":
+            chapterHeader = "Chicken Addon:";
+            buttonList = ["chicken", "rooster", "wood", "coop"];
+            break;
+        case "blackSheep":
+            chapterHeader = "Black Sheep Addon:";
+            buttonList = ["blackSheep"];
+            break;
+        case "eagle":
+            chapterHeader = "Eagle Addon:";
+            buttonList = ["bag", "snake", "eagle"];
+            break;
+        case "skunk":
+            chapterHeader = "Skunk Addon:";
+            buttonList = ["skunk", "snake", "boar", "owl"];
+            break;
+        case "bee":
+            chapterHeader = "Bear Addon:";
+            buttonList = ["bear", "bee", "honey", "bonusTurn"];
+            break;
+        case "pegasus":
+            chapterHeader = "Pegasus Addon:";
+            buttonList = ["pegasus", "squirrel", "donkey"];
+            break;
+        case "shadowBeast":
+            chapterHeader = "Shadow Beast Addon:";
+            buttonList = ["shadowBeast", "shadowTalisman", "nightmare", "unicorn", "celestialDeer", "celestialTalisman"];
+            break;
+        case "lettuce":
+            chapterHeader = "Pumpkin Addon:";
+            buttonList = ["water", "lettuce", "crow", "scarecrow", "stick", "hay", "pumpkin"];
+            break;
+        case "pond":
+            chapterHeader = "Pond Addon:";
+            buttonList = ["pond", "cod", "salmon", "duck", "beaver", "hippocampus", "otter", "turtle", "frog"];
+            break;
+        case "alpaca":
+            chapterHeader = "Alpaca Addon:";
+            buttonList = ["alpaca"]
+            break;
+        case "cheese":
+            chapterHeader = "Cheese Addon:";
+            buttonList = ["milk", "mouse", "cheese", "cheddar", "brie", "blueCheese", "gouda"];
+            break;
+        case "snowFox":
+            chapterHeader = "Snow Fox Addon:";
+            buttonList = ["snowFox", "iceWolf", "seal"];
+            break;
+    }
+    ctx.fillText(chapterHeader, width/2-ctx.measureText(chapterHeader).width/2, ctx.measureText("M").width);
+    let indexX = 0;
+    let indexY = 0;
+    let amount = Math.ceil(Object.keys(addons).length/2)+1;
+    let size = width/(amount*1.5+0.5);
+    for (let image of buttonList) {
+        imageButton(image, size/2+size*indexX*3/2, height/2-size*5/4+size*indexY*3/2, size, size, () => {
             state = "animalInstructions";
-            currentAnimalInstruction = animal;
+            currentAnimalInstruction = image;
             renderBackground();
             renderAnimalInstructions();
         });
         indexX++;
-        if (indexX == 16) {
+        if (indexX == amount) {
             indexX = 0;
             indexY++;
         }
-    };
+    }
+}
+
+let animalInstructions = {
+    "chicken": {
+        "name": "Chicken", 
+        "description": "Becomes the starting animal before the rabbit. Consumed by the fox.",
+        "cap": 32,
+        "type": "Progression"
+    },
+    "rooster": {
+        "name": "Rooster", 
+        "description": "When chickens are bred, provides an additional 1 chicken for each 3 already owned.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "rabbit": {
+        "name": "Rabbit", 
+        "description": "Default starting animal.",
+        "cap": 20,
+        "type": "Progression"
+    },
+    "sheep": {
+        "name": "Sheep", 
+        "description": "Next animal after the rabbit. Can be used to buy a small dog.",
+        "cap": 12,
+        "type": "Progression"
+    },
+    "blackSheep": {
+        "name": "Black Sheep", 
+        "description": "Exchangable for 1 sheep. Doesn't breed, but survives all predator attacks. Useful as a backup sheep in case of emergency.",
+        "cap": 1,
+        "type": "Tradable"
+    },
+    "pig": {
+        "name": "Pig", 
+        "description": "Next animal after the sheep.",
+        "cap": 8,
+        "type": "Progression"
+    },
+    "cow": {
+        "name": "Cow", 
+        "description": "Next animal after the pig. Can be used to buy a big dog.",
+        "cap": 6,
+        "type": "Progression"
+    },
+    "horse": {
+        "name": "Horse", 
+        "description": "Next animal after the cow. The last animal in the progression of the base game.",
+        "cap": 4,
+        "type": "Progression"
+    },
+    "smallDog": {
+        "name": "Small Dog", 
+        "description": "Protects against fox attacks at the cost of its life.",
+        "cap": 2,
+        "type": "Protective"
+    },
+    "bigDog": {
+        "name": "Big Dog", 
+        "description": "Protects against wolf attacks at the cost of its life.",
+        "cap": 2,
+        "type": "Protective"
+    },
+    "fox": {
+        "name": "Fox", 
+        "description": "Eats all but 1 rabbit.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "wolf": {
+        "name": "Wolf", 
+        "description": "Eats all sheep, pigs, and cows.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "stork": {
+        "name": "Stork", 
+        "description": "Randomly arrives and departs between last and first players' turns. 2 can be exchanged for 1 of an animal that has just succesfully bred.",
+        "cap": 4,
+        "type": "Tradable"
+    },
+    "badger": {
+        "name": "Badger", 
+        "description": "Goes to the player who's just been attacked by a fox, wolf, or an otter. Can breed as any animal.",
+        "cap": "global cap of 1",
+        "type": "Buffing"
+    },
+    "goat": {
+        "name": "Goat", 
+        "description": "Costs 1 sheep to be sent to another player's empty pen, blocking its corresponding animal for being gained by breeding or trading. Can be gotten rid of by paying 3 sheep or being attacked by a wolf without a big dog. In single player, pig, cow, and horse pens are occupied by it at the beginning of the game and wolf attack don't work against it.",
+        "cap": "none",
+        "type": "Pest"
+    },
+    "cat": {
+        "name": "Cat", 
+        "description": "Costs 1 pig to be sent to another player's farm, scaring away all their dogs. Not present in singleplayer mode.",
+        "cap": "none",
+        "type": "Offensive"
+    },
+    "bag": {
+        "name": "Bag", 
+        "description": "Costs 1 sheep and can only be bought once per turn. Contains one of the following: fox, snake, rabbit, eagle.",
+        "cap": "none",
+        "type": "Consumable"
+    },
+    "eagle": {
+        "name": "Eagle", 
+        "description": "Used to steal another player's animal. In singleplayer it instead brings the current tribute animal.",
+        "cap": "none",
+        "type": "Offensive, Buffing"
+    },
+    "snake": {
+        "name": "Snake", 
+        "description": "Eats one rabbit.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "skunk": {
+        "name": "Skunk", 
+        "description": "In multiplayer: makes the player skip a turn. In singleplayer: makes all but one chicken, rabbit, sheep, and pig run away.",
+        "cap": "none",
+        "type": "Debuffing"
+    },
+    "boar": {
+        "name": "Boar", 
+        "description": "Triggers pig breeding and counts as a pig during it.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "owl": {
+        "name": "Owl", 
+        "description": "Can join the player for a price of 4 rabbits. Brings a rabbit every turn and protects against skunk attacks at the cost of its life.",
+        "cap": 1,
+        "type": "Protective"
+    },
+    "bee": {
+        "name": "Bee", 
+        "description": "Bought with 2 rabbits. Levelled up with honey.",
+        "cap": "lvl 5",
+        "type": "Generating"
+    },
+    "honey": {
+        "name": "Honey", 
+        "description": "Used for levelling up the bee, buying rabbits, and calming down the bear.",
+        "cap": 6,
+        "type": "Resource"
+    },
+    "bear": {
+        "name": "Bear", 
+        "description": "Has a 10% chance to arrive before the trading phase. Eats the largest animal available or 3 honey.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "bonusTurn": {
+        "name": "Energetic Honey", 
+        "description": "In multiplayer: Provides the player with a bonus turn. In singleplayer: Increases breeding yields by 1.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "squirrel": {
+        "name": "Squirrel", 
+        "description": "Decreases progression animals' caps by 1 for every 4 squirrels on the farm.",
+        "cap": 16,
+        "type": "Pest"
+    },
+    "donkey": {
+        "name": "Donkey", 
+        "description": "Increases progression animals' caps by 4. Stops squirrels from spawning.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "pegasus": {
+        "name": "Pegasus", 
+        "description": "Next animal after the horse.",
+        "cap": 0,
+        "type": "Progression"
+    },
+    "shadowBeast": {
+        "name": "Shadow Beast", 
+        "description": "Eats the largest animal available and offers the shadow talisman.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "celestialDeer": {
+        "name": "Celestial Deer", 
+        "description": "Gives the current tribute animal and offers the celestial talisman.",
+        "cap": "none",
+        "type": ""
+    },
+    "unicorn": {
+        "name": "Unicorn", 
+        "description": "Increases breeding yields by 1.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "nightmare": {
+        "name": "Nightmare", 
+        "description": "Decreases progression animals' caps by 2.",
+        "cap": 1,
+        "type": "Debuffing"
+    },
+    "celestialTalisman": {
+        "name": "Celestial Talisman", 
+        "description": "Doubles the chance of meeting the celestial deer. Removes nightmare encounters. Nullifies a shadow beast encounter, but is then removed. In multiplayer: unlocks trades that let the player acquire protective animals for free. In singleplayer: makes the player roll with advantage.",
+        "cap": 1,
+        "type": "Buffing, Protective"
+    },
+    "shadowTalisman": {
+        "name": "Shadow Talisman", 
+        "description": "Doubles the chance of meeting the shadow beast. Removes unicorn encounters. Nullifies a celestial deer encounter, but is then removed. In singleplayer: unlocks trades that let the player send predators to other players. In singleplayer: makes the player roll with disadvantage.",
+        "cap": 1,
+        "type": "Buffing, Debuffing, Offensive"
+    },
+    "water": {
+        "name": "Water", 
+        "description": "Randomly arrives and departs between last and first players' turns.",
+        "cap": 4,
+        "type": "Resource"
+    },
+    "stick": {
+        "name": "Stick", 
+        "description": "Crafting material used for crafting the scarecrow.",
+        "cap": "none",
+        "type": "Material"
+    },
+    "lettuce": {
+        "name": "Lettuce", 
+        "description": "Increases breeding yields by 1.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "hay": {
+        "name": "Hay", 
+        "description": "Crafting material used for crafting the scarecrow.",
+        "cap": "none",
+        "type": "Material"
+    },
+    "pumpkin": {
+        "name": "Pumpkin", 
+        "description": "Crafting material used for crafting the scarecrow.",
+        "cap": "none",
+        "type": "Material"
+    },
+    "scarecrow": {
+        "name": "Scarecrow", 
+        "description": "Stops crows from spawning",
+        "cap": 1,
+        "type": "Structure"
+    },
+    "crow": {
+        "name": "Crow", 
+        "description": "Decreases breeding yields by 1 for every 4 crows.",
+        "cap": 16,
+        "type": "Pest"
+    },
+    "pond": {
+        "name": "Pond", 
+        "description": "Allows for breeding and trading of water animals.",
+        "cap": 1,
+        "type": "Structure"
+    },
+    "cod": {
+        "name": "Cod", 
+        "description": "The cheapest one.",
+        "cap": 20,
+        "type": "Water"
+    },
+    "salmon": {
+        "name": "Salmon", 
+        "description": "Next animal after the cod.",
+        "cap": 12,
+        "type": "Water"
+    },
+    "duck": {
+        "name": "Duck", 
+        "description": "Next animal after the salmon.",
+        "cap": 8,
+        "type": "Water"
+    },
+    "beaver": {
+        "name": "Beaver", 
+        "description": "Next animal after the duck.",
+        "cap": 6,
+        "type": "Water"
+    },
+    "hippocampus": {
+        "name": "Hippocampus", 
+        "description": "Next animal after the beaver and after the horse. Comes before the pegasus if present.",
+        "cap": 4,
+        "type": "Progression, Water"
+    },
+    "turtle": {
+        "name": "Turtle", 
+        "description": "Protects against otter attacks at the cost of its life.",
+        "cap": 2,
+        "type": "Protective"
+    },
+    "otter": {
+        "name": "Otter", 
+        "description": "Eats all cod, salmon, ducks, and beaver.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "frog": {
+        "name": "Frog", 
+        "description": "Comes after an otter attack. Spent when trading up water animals when having 1 too little.",
+        "cap": "none",
+        "type": "Buffing"
+    },
+    "alpaca": {
+        "name": "Alpaca", 
+        "description": "Used to reroll 1 of the breeding dice.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "milk": {
+        "name": "Milk", 
+        "description": "Produced at the start of the turn. 1 is produced for every cow up to a maximum of 4 per turn.",
+        "cap": 4,
+        "type": "Resource"
+    },
+    "cheese": {
+        "name": "Cheese", 
+        "description": "Used to buy mice.",
+        "cap": "none",
+        "type": "Tradable"
+    },
+    "cheddar": {
+        "name": "Cheddar", 
+        "description": "Can be traded for a sheep.",
+        "cap": "none",
+        "type": "Tradable"
+    },
+    "brie": {
+        "name": "Brie", 
+        "description": "Increases breeding yields by 1.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "blueCheese": {
+        "name": "Blue Cheese", 
+        "description": "In multiplayer: can be used to make another player lose a turn. In singleplayer: protects against 1 predator attack.",
+        "cap": 1,
+        "type": "Offensive, Protective"
+    },
+    "gouda": {
+        "name": "Gouda", 
+        "description": "Triggers breeding of the smallest animal whose breeding has not been triggered during breeding.",
+        "cap": 1,
+        "type": "Buffing"
+    },
+    "mouse": {
+        "name": "Mouse", 
+        "description": "Increases milk cap by 1.",
+        "cap": 4,
+        "type": "Buffing"
+    },
+    "snowFox": {
+        "name": "Snow Fox", 
+        "description": "Replaces the fox. Acts like a fox and freezes chickens and rabbits, preventing them from breeding even when not eaten.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "iceWolf": {
+        "name": "Ice Wolf", 
+        "description": "Replaces the wolf. Acts like a fox and freezes sheep, pigs, and cows, preventing them from breeding even when not eaten.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "seal": {
+        "name": "Seal", 
+        "description": "Replaces the fox. Acts like an otter and freezes cod, salmon, ducks, and beavers, preventing them from breeding even when not eaten.",
+        "cap": "none",
+        "type": "Predator"
+    },
+    "phoenix": {
+        "name": "Phoenix", 
+        "description": "Protects against freezing at the cost of its life.",
+        "cap": "none",
+        "type": "Protective"
+    },
+    "coop": {
+        "name": "Coop", 
+        "description": "Triggers chicken breeding every turn. Increases chicken cap to 40. Removes chickens from the breeding dice.",
+        "cap": 1,
+        "type": "Structure"
+    },
+    "wood": {
+        "name": "Wood", 
+        "description": "Crafting material used for building the coop.",
+        "cap": "none",
+        "type": "Material"
+    }
 }
 
 function renderAnimalInstructions() {
@@ -2812,25 +3279,55 @@ function renderAnimalInstructions() {
     ctx.font = String(buttonSize/2) + "px pixel";
     ctx.fillStyle = "rgb(255, 255, 0)";
     imageButton("arrowFlip", 0, 0, buttonSize, buttonSize, () => {
-        state = "instructions";
+        state = "instructionChapter";
         renderBackground();
-        renderInstructions();
+        renderInstructionChapter();
     }, "arrowHoverFlip");
-    image(currentAnimalInstruction, width-buttonSize*2, 0, buttonSize*2, buttonSize*2);
-    let textArr = animalInstructions[currentAnimalInstruction].split(" ");
+    image(currentAnimalInstruction, width-buttonSize*3, 0, buttonSize*3, buttonSize*3);
+    let name = animalInstructions[currentAnimalInstruction].name;
+    let cap = "cap: "+String(animalInstructions[currentAnimalInstruction].cap);
+    let type = "type: "+String(animalInstructions[currentAnimalInstruction].type);
+    ctx.fillText(name, width-buttonSize*3-ctx.measureText(name).width, buttonSize*7/4);
+    ctx.font = String(buttonSize/3) + "px pixel";
+    let textArr = animalInstructions[currentAnimalInstruction].description.split(" ");
     let lineArr = [];
     while (textArr.length > 0) {
         let line = "";
-        while (ctx.measureText(line+textArr[0]).width < width-buttonSize*4 && textArr.length > 0) {
+        while (ctx.measureText(line+textArr[0]).width < width-buttonSize*6 && textArr.length > 0) {
             line += textArr.shift() + " ";
         }
         lineArr.push(line);
     }
-    let startX = buttonSize*2;
-    let startY = buttonSize*2;
+    let startX = buttonSize*3;
+    let startY = buttonSize*3;
     let indexY = 0;
     for (let line of lineArr) {
         ctx.fillText(line, startX, startY+buttonSize*indexY/2);
+        indexY++;
+    }
+    ctx.font = String(buttonSize/4) + "px pixel";
+    textArr = cap.split(" ");
+    lineArr = [];
+    while (textArr.length > 0) {
+        let line = "";
+        while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0) {
+            line += textArr.shift() + " ";
+        }
+        lineArr.push(line);
+    }
+    textArr = type.split(" ");
+    while (textArr.length > 0) {
+        let line = "";
+        while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0) {
+            line += textArr.shift() + " ";
+        }
+        lineArr.push(line);
+    }
+    startX = width-buttonSize*3;
+    startY = buttonSize*3.25;
+    indexY = 0;
+    for (let line of lineArr) {
+        ctx.fillText(line, startX, startY+buttonSize*indexY/3);
         indexY++;
     }
 }
@@ -2921,6 +3418,10 @@ addEventListener("resize", async function() {
             case "instructions":
                 renderBackground();
                 renderInstructions();
+                break;
+            case "instructionChapter":
+                renderBackground();
+                renderInstructionChapter();
                 break;
             case "animalInstructions":
                 renderBackground();
