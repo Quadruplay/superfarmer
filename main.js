@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24d";
+const version = "1w24e";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -2922,7 +2922,7 @@ let animalInstructions = {
         "name": "Cow", 
         "description": "Next animal after the pig. Can be used to buy a big dog.",
         "cap": 6,
-        "type": "Progression"
+        "type": "Progression, Generating"
     },
     "horse": {
         "name": "Horse", 
@@ -2988,7 +2988,7 @@ let animalInstructions = {
         "name": "Eagle", 
         "description": "Used to steal another player's animal. In singleplayer it instead brings the current tribute animal.",
         "cap": "none",
-        "type": "Offensive, Buffing"
+        "type": "Offensive, Generating"
     },
     "snake": {
         "name": "Snake", 
@@ -3066,7 +3066,7 @@ let animalInstructions = {
         "name": "Celestial Deer", 
         "description": "Gives the current tribute animal and offers the celestial talisman.",
         "cap": "none",
-        "type": ""
+        "type": "Generating"
     },
     "unicorn": {
         "name": "Unicorn", 
@@ -3084,7 +3084,7 @@ let animalInstructions = {
         "name": "Celestial Talisman", 
         "description": "Doubles the chance of meeting the celestial deer. Removes nightmare encounters. Nullifies a shadow beast encounter, but is then removed. In multiplayer: unlocks trades that let the player acquire protective animals for free. In singleplayer: makes the player roll with advantage.",
         "cap": 1,
-        "type": "Buffing, Protective"
+        "type": "Buffing, Protective, Generating"
     },
     "shadowTalisman": {
         "name": "Shadow Talisman", 
@@ -3186,7 +3186,7 @@ let animalInstructions = {
         "name": "Frog", 
         "description": "Comes after an otter attack. Spent when trading up water animals when having 1 too little.",
         "cap": "none",
-        "type": "Buffing"
+        "type": "Buffing, Generating"
     },
     "alpaca": {
         "name": "Alpaca", 
@@ -3264,7 +3264,7 @@ let animalInstructions = {
         "name": "Coop", 
         "description": "Triggers chicken breeding every turn. Increases chicken cap to 40. Removes chickens from the breeding dice.",
         "cap": 1,
-        "type": "Structure"
+        "type": "Structure, Generating"
     },
     "wood": {
         "name": "Wood", 
