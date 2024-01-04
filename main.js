@@ -2298,7 +2298,7 @@ function renderGame() {
                     imageText(players[turn-1].tribute.animal, String(3-players[turn-1].tribute.amount)+"/3", width/2+playerWidth/2-buttonSize/2, buttonSize, buttonSize, "rgb(255, 0, 0)");
                 }
                 textButton("Continue", width/2+playerWidth/2-ctx.measureText("Continue").width/2, buttonSize*3, "rgb(255, 255, 255)", () => {
-                    if (addons["ufo"]) {
+                    if (addons["ufo"] && Math.random() < 1/3) {
                         activity = "ufoInit";
                     } else if (addons["shadowBeast"]) {
                         activity = "night";
