@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24e";
+const version = "1w24f";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -29,7 +29,7 @@ async function loadImages() {
     "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
     "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
     "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix", "scarecrow", "crow", "pumpkin", "stick", "hay",
-    "coop", "wood"];
+    "coop", "wood", "ufo"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -66,6 +66,25 @@ let actionAnimals = ["goat", "cat", "bag", "bee", "squirrel", "donkey", "snake",
 let aquaticAnimals = ["cod", "salmon", "duck", "beaver"];
 let pondDie1 = ["cod", "cod", "cod", "cod", "salmon", "salmon", "salmon", "duck", "beaver", "otter"];
 let pondDie2 = ["cod", "cod", "cod", "cod", "cod", "salmon", "salmon", "duck", "duck", "hippocampus"];
+let ufoAnimals = [];
+for (let i = 0; i < 10; i++) {
+    ufoAnimals.push("rabbit");
+}
+for (let i = 0; i < 8; i++) {
+    ufoAnimals.push("sheep");
+}
+for (let i = 0; i < 6; i++) {
+    ufoAnimals.push("pig");
+}
+for (let i = 0; i < 4; i++) {
+    ufoAnimals.push("cow");
+}
+for (let i = 0; i < 1; i++) {
+    ufoAnimals.push("horse");
+}
+for (let i = 0; i < 1; i++) {
+    ufoAnimals.push("wolf");
+}
 let winner = "";
 
 class Player {
@@ -501,6 +520,7 @@ let addons = {
     "alpaca": false,        // done
     "cheese": false,        // done
     "snowFox": false,       // done
+    "ufo": false,           // done
 }
 let bagBought = false;
 let loadedAddons = localStorage.getItem("addons");
@@ -535,6 +555,11 @@ let pondRoll1 = "";
 let pondRoll2 = "";
 let shadowTalismanUsed = false;
 let celestialTalismanUsed = false;
+let ufoChoice1 = -1;
+let ufoChoice2 = -1;
+let ufoChoice3 = -1;
+let ufoArr = new Set();
+let ufoReward = "";
 
 function renderEnd() {
     ctx.fillStyle = "rgb(255, 255, 255)";
@@ -772,7 +797,7 @@ function renderPlayers(players) {
         if (index == turn-1) {
             ctx.fillStyle = playerColor;
         }
-        ctx.fillText(player.name, ctx.measureText("M").width*0.5, playerHeight*index+ctx.measureText("M").width*1.5);
+        ctx.fillText(player.name, ctx.measureText("M").width*0.5, index != turn-1 ? playerHeight*index+ctx.measureText("M").width*1.5 : playerHeight*index+ctx.measureText("M").width*5);
         ctx.fillStyle = "rgb(0, 0, 0)";
         let indexX = 0;
         let indexY = 1;
@@ -799,7 +824,7 @@ function renderPlayers(players) {
             } else if (animal == "phoenix") {
                 quantifier = addons["snowFox"];
             }
-            if (quantifier) {
+            if (quantifier && turn != index+1) {
                 let text = String(amount);
                 while (text.length < 3) text+=" ";
                 let color;
@@ -823,6 +848,7 @@ function renderPlayers(players) {
 }
 
 function renderPlayArea() {
+    ctx.font = String(height/60)+"px pixel";
     let animalAmount = 0;
     for (let [animal, amount] of Object.entries(new Player("temp").animals)) {
         animalAmount++;
@@ -850,7 +876,59 @@ function renderPlayArea() {
             color = "rgb(127, 0, 127)";
             break;
     }
-    renderLine("Player "+turn+"'s turn:", 0, color);
+    if (turn) {
+        renderLine("Player "+turn+"'s turn:", 0, color);
+        let player = players[turn-1];
+        let animalSize = height/15;
+        let animalsInRow = Math.floor((width-playerWidth)/animalSize);
+        let rowAmount = Math.ceil(animalAmount/animalsInRow);
+        let margin = (width-playerWidth-animalsInRow*animalSize)/2;
+        let indexX = 0;
+        let indexY = 0;
+        let font = ctx.font;
+        ctx.font = String(animalSize/5)+"px pixel";
+        for (let [animal, amount] of Object.entries(player.animals)) {
+            let quantifier = true;
+            if (Object.keys(addons).includes(animal)) {
+                quantifier = addons[animal];
+            } else if (animal == "rooster" || animal == "wood" || animal == "coop") {
+                quantifier = addons["chicken"];
+            } else if (animal == "boar" || animal == "owl") {
+                quantifier = addons["skunk"];
+            } else if (animal == "honey" || animal == "bonusTurn") {
+                quantifier = addons["bee"];
+            } else if (animal == "donkey" || animal == "squirrel") {
+                quantifier = addons["pegasus"];
+            } else if (animal == "unicorn" || animal == "nightmare" || animal == "celestialTalisman" || animal == "shadowTalisman") {
+                quantifier = addons["shadowBeast"];
+            } else if (["cod","salmon","duck","beaver","hippocampus","turtle","frog"].includes(animal)) {
+                quantifier = addons["pond"];
+            } else if (["water", "stick", "hay", "pumpkin", "scarecrow", "crow"].includes(animal)) {
+                quantifier = addons["lettuce"];
+            } else if ([ "milk", "mouse", "cheddar", "brie", "gouda", "blueCheese" ].includes(animal)) {
+                quantifier = addons["cheese"];
+            } else if (animal == "phoenix") {
+                quantifier = addons["snowFox"];
+            }
+            if (quantifier) {
+                image(animal == "goat" ? "goat" : animal, playerWidth+margin+indexX*animalSize, height-rowAmount*(animalSize)-margin+indexY*animalSize, animalSize);
+                ctx.fillStyle = "rgb(0, 0, 0)";
+                let cap = player.animalCap[animal];
+                let text = String(amount);
+                if (cap != -1 && amount != "goat") text+="/"+String(cap);
+                if (cap != -1 && amount > cap && amount != "goat") ctx.fillStyle = "rgb(255, 0, 0)";
+                if (amount == "goat") text = "goat";
+                if (animal == "bee") text = "lv"+String(amount);
+                ctx.fillText(text, playerWidth+margin+indexX*animalSize, height-rowAmount*(animalSize)-margin+indexY*animalSize+ctx.measureText("M").width);
+                indexX++;
+                if (indexX == animalsInRow) {
+                    indexX = 0;
+                    indexY++;
+                }
+            }
+        }
+        ctx.font = font;
+    }
 }
 
 function colorButton(color, x, y, width, height, callback) {
@@ -910,7 +988,7 @@ function nextTurn() {
     }
     if (addons["pegasus"] && players[turn-1].animals["donkey"] == 0) players[turn-1].animals["squirrel"]++;
     if (addons["lettuce"] && players[turn-1].animals["scarecrow"] == 0) players[turn-1].animals["crow"]++;
-    if (addons["cheese"]) players[turn-1].animals["milk"]+=Math.min(4, players[turn-1].animals["cow"]);
+    if (addons["cheese"] && players[turn-1].animals["cow"] != "goat") players[turn-1].animals["milk"]+=Math.min(4, players[turn-1].animals["cow"]);
     if (players[turn-1].animals["coop"] == 1) {
         die1 = ["rabbit","rabbit","rabbit","rabbit","rabbit","rabbit",
             "sheep","sheep","sheep","pig","horse","wolf"];
@@ -946,12 +1024,13 @@ function renderGame() {
     renderBackground();
     renderPlayers(players);
     renderPlayArea();
-    if (addons["pegasus"]) players[turn-1].setCaps();
+    if (addons["pegasus"] && turn) players[turn-1].setCaps();
     let animalAmount = 0;
     for (let [animal, amount] of Object.entries(new Player("temp").animals)) {
         animalAmount++;
     }
     let playerWidth = height*Math.ceil(animalAmount/4)/20;
+    ctx.font = String(height/60)+"px pixel";
     let buttonSize = ctx.measureText("M").width*4;
     let text = "";
     let startX;
@@ -1545,10 +1624,10 @@ function renderGame() {
                 shop.push([["sheep", 1], ["phoenix", 1], "leftToRight"]);
             }
             prevShopPages = shopPages;
-            shopPages = Math.ceil(shop.length/24);
+            shopPages = Math.ceil(shop.length/18);
             shopPageArr = [];
-            for (let i = 0; i < 24; i++) {
-                let tradeIndex = (shopPage-1)*24+i;
+            for (let i = 0; i < 18; i++) {
+                let tradeIndex = (shopPage-1)*18+i;
                 if (tradeIndex < shop.length) {
                     shopPageArr.push(shop[tradeIndex]);
                 }
@@ -1801,7 +1880,7 @@ function renderGame() {
                     indexY++;
                 }
             })
-            indexY++;
+            if (indexX != 0) indexY++;
             textButton("Continue", width/2+playerWidth/2-ctx.measureText("Continue").width/2, startY+buttonSize*indexY*1.5, "rgb(255, 255, 255)", () => {
                 shopPage = 1;
                 prevShopPages = 0;
@@ -2219,7 +2298,9 @@ function renderGame() {
                     imageText(players[turn-1].tribute.animal, String(3-players[turn-1].tribute.amount)+"/3", width/2+playerWidth/2-buttonSize/2, buttonSize, buttonSize, "rgb(255, 0, 0)");
                 }
                 textButton("Continue", width/2+playerWidth/2-ctx.measureText("Continue").width/2, buttonSize*3, "rgb(255, 255, 255)", () => {
-                    if (addons["shadowBeast"]) {
+                    if (addons["ufo"]) {
+                        activity = "ufoInit";
+                    } else if (addons["shadowBeast"]) {
                         activity = "night";
                     } else {
                         nextTurn();
@@ -2227,6 +2308,104 @@ function renderGame() {
                     renderBackground();
                     renderGame();
                 });
+            }
+            break;
+        case "ufoInit":
+            renderLine("A UFO appears! It invites you to a game!", 1, "rgb(0, 0, 0)");
+            imageButton("ufo", width/2+playerWidth/2-buttonSize/2, buttonSize, buttonSize, buttonSize, () => {
+                ufoAnimals = ufoAnimals.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
+                activity = "ufo";
+                renderBackground();
+                renderGame();
+            })
+            break;
+        case "ufo":
+            text = "";
+            if (ufoChoice1 == -1) {
+                text = "Choose 3 animals!";
+            } else if (ufoChoice2 == -1) {
+                text = "Choose 2 animals!";
+            } else if (ufoChoice3 == -1) {
+                text = "Choose 1 animal!";
+            } else {
+                text = "Get your reward!";
+            }
+            renderLine(text, 1, "rgb(0, 0, 0)");
+            if (ufoChoice1 == -1 || ufoChoice2 == -1 || ufoChoice3 == -1) {
+                startX = width/2+playerWidth/2-buttonSize*4.25;
+                startY = buttonSize;
+                indexX = 0;
+                indexY = 0;
+                ufoAnimals.forEach((animal, index) => {
+                    if (index == ufoChoice1 || index == ufoChoice2 || index == ufoChoice3) {
+                        image(animal, startX+buttonSize*indexX*1.5, startY+buttonSize*indexY*1.5, buttonSize);
+                    } else {
+                        imageButton("empty", startX+buttonSize*indexX*1.5, startY+buttonSize*indexY*1.5, buttonSize, buttonSize, () => {
+                            if (ufoChoice1 == -1) {
+                                ufoChoice1 = index;
+                            } else if (ufoChoice2 == -1) {
+                                ufoChoice2 = index;
+                            } else if (ufoChoice3 == -1) {
+                                ufoChoice3 = index;
+                            }
+                            renderBackground();
+                            renderGame();
+                        });
+                    }
+                    indexX++;
+                    if (indexX == 6) {
+                        indexX = 0;
+                        indexY++;
+                    }
+                });
+            } else {
+                image(ufoAnimals[ufoChoice1], width/2+playerWidth/2-buttonSize*7/2, buttonSize, buttonSize);
+                ctx.fillText("+", width/2+playerWidth/2-buttonSize*2-ctx.measureText("M").width/2, buttonSize*3/2+ctx.measureText("M").width/2);
+                image(ufoAnimals[ufoChoice2], width/2+playerWidth/2-buttonSize*3/2, buttonSize, buttonSize);
+                ctx.fillText("+", width/2+playerWidth/2-ctx.measureText("M").width/2, buttonSize*3/2+ctx.measureText("M").width/2);
+                image(ufoAnimals[ufoChoice3], width/2+playerWidth/2+buttonSize/2, buttonSize, buttonSize);
+                ctx.fillText("=", width/2+playerWidth/2+buttonSize*2-ctx.measureText("M").width/2, buttonSize*3/2+ctx.measureText("M").width/2);
+                if (ufoReward == "") {
+                    ufoArr = new Set([ufoAnimals[ufoChoice1], ufoAnimals[ufoChoice2], ufoAnimals[ufoChoice3]]);
+                    if (ufoArr.has("wolf")) {
+                        ufoReward = "wolf";
+                    } else if (ufoArr.size == 3) {
+                        if (ufoArr.has("horse")) {
+                            ufoReward = "horse";
+                        } else if (ufoArr.has("cow")) {
+                            ufoReward = "cow";
+                        } else if (ufoArr.has("pig")) {
+                            ufoReward = "pig";
+                        } else if (ufoArr.has("sheep")) {
+                            ufoReward = "sheep";
+                        } else if (ufoArr.has("rabbit")) {
+                            ufoReward = "rabbit";
+                        }
+                    } else if (ufoArr.size == 2) {
+                        ufoReward = "empty";
+                    } else if (ufoArr.size == 1) {
+                        ufoReward = ufoAnimals[ufoChoice1];
+                    }
+                }
+                    imageTextButton(ufoReward, ufoArr.has("wolf") || ufoArr.size == 3 ? "1" : ufoArr.size == 2 ? "0" : "2", width/2+playerWidth/2+buttonSize*5/2, buttonSize, buttonSize, "rgb(0, 0, 0)", () => {
+                        if (addons["shadowBeast"]) {
+                            activity = "night";
+                        } else {
+                            nextTurn();
+                        }
+                        if (ufoReward == "wolf") {
+                            players[turn-1].wolfAttack();
+                        } else if (ufoReward != "empty") {
+                            players[turn-1].animals[ufoReward]+= ufoArr.size == 1 ? 2 : 1;
+                        }
+                        ufoReward = "";
+                        ufoChoice1 = -1;
+                        ufoChoice2 = -1;
+                        ufoChoice3 = -1;
+                        ufoArr = new Set();
+                        renderBackground();
+                        renderGame();
+                    });
             }
             break;
         case "night":
@@ -2507,9 +2686,9 @@ function initGame() {
                 "sheep","sheep","pig","pig","cow","fox"];
     }
     if (addons["lettuce"] && addons["stork"]) {
-        storkDie = ["stork","stork","stork","stork","stork","antiStork","antiWater","water","water","water","water","water"]
+        storkDie = ["stork","stork","empty","water","water","water"]
     } else if (addons["lettuce"]) {
-        storkDie = ["antiWater","antiWater","empty","water","water","water"]
+        storkDie = ["antiWater","empty","water","water","water","water"]
     }
     if (addons["skunk"]) {
         activity = "skunk";
@@ -2859,6 +3038,10 @@ function renderInstructionChapter() {
         case "snowFox":
             chapterHeader = "Snow Fox Addon:";
             buttonList = ["snowFox", "iceWolf", "seal"];
+            break;
+        case "ufo":
+            chapterHeader = "UFO Addon:";
+            buttonList = ["ufo"];
             break;
     }
     ctx.fillText(chapterHeader, width/2-ctx.measureText(chapterHeader).width/2, ctx.measureText("M").width);
@@ -3271,7 +3454,13 @@ let animalInstructions = {
         "description": "Crafting material used for building the coop.",
         "cap": "none",
         "type": "Material"
-    }
+    },
+    "ufo": {
+        "name": "UFO", 
+        "description": "Arrives after tribute. Makes the player select 3 random animals. If wolf is selected, it is sent to that player's farm. If not, the player may get animals according to the following: if 3 of the same are chosen, receive 2 of them; if 2 of the same and 1 different are chosen, receive nothing; if 3 different are chosen, receive the most valuable.",
+        "cap": "none",
+        "type": "none"
+    },
 }
 
 function renderAnimalInstructions() {
