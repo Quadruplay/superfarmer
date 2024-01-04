@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24f";
+const version = "1w24g";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -298,6 +298,7 @@ class Player {
                         } else {
                             this.tribute.animal = "win";
                         }
+                        break;
                     case "pegasus":
                         this.tribute.animal = "win";
                         break;
@@ -339,9 +340,9 @@ class Player {
             } else if (this.animals["bigDog"] > 0) {
                 this.animals["bigDog"]--;
             } else {
-                this.animals["sheep"] = 0;
-                this.animals["pig"] = 0;
-                this.animals["cow"] = 0;
+                if (this.animals["sheep"] != "goat") this.animals["sheep"] = 0;
+                if (this.animals["pig"] != "goat") this.animals["pig"] = 0;
+                if (this.animals["cow"] != "goat") this.animals["cow"] = 0;
             }
             if (this.animals["phoenix"] > 0) {
                 this.animals["phoenix"]--;
@@ -357,8 +358,9 @@ class Player {
                 this.animals["badger"] = 1;
             }
             for (let [animal, amount] of Object.entries(this.animals)) {
-                if (amount == "goat" && playerAmount > 1) {
+                if (amount == "goat") {
                     this.animals[animal] = 0;
+                    if (playerAmount == 1) break;
                 }
             }
         }
@@ -919,6 +921,11 @@ function renderPlayArea() {
                 if (cap != -1 && amount > cap && amount != "goat") ctx.fillStyle = "rgb(255, 0, 0)";
                 if (amount == "goat") text = "goat";
                 if (animal == "bee") text = "lv"+String(amount);
+                if (player.freeze[animal]) {
+                    ctx.globalAlpha = 0.4;
+                    ctx.drawImage(images["freeze"], playerWidth+margin+indexX*animalSize, height-rowAmount*(animalSize)-margin+indexY*animalSize, animalSize, animalSize);
+                    ctx.globalAlpha = 1;
+                }
                 ctx.fillText(text, playerWidth+margin+indexX*animalSize, height-rowAmount*(animalSize)-margin+indexY*animalSize+ctx.measureText("M").width);
                 indexX++;
                 if (indexX == animalsInRow) {
@@ -1020,11 +1027,11 @@ let prevShopPages = 0;
 let shopPageArr = [];
 
 function renderGame() {
+    if (turn) players[turn-1].setCaps();
     removeListeners();
     renderBackground();
     renderPlayers(players);
     renderPlayArea();
-    if (addons["pegasus"] && turn) players[turn-1].setCaps();
     let animalAmount = 0;
     for (let [animal, amount] of Object.entries(new Player("temp").animals)) {
         animalAmount++;
@@ -1102,8 +1109,10 @@ function renderGame() {
                             nextTurn();
                         } else {
                             for (let animal of ["chicken", "rabbit", "sheep", "pig"]) {
-                                players[turn-1].animals[animal] = Math.max(1, players[turn-1].animals[animal]);
+                                players[turn-1].animals[animal] = Math.max(0, Math.sign(players[turn-1].animals[animal]));
                             }
+                            renderBackground();
+                            renderGame();
                         }
                         break;
                     case "snake":
@@ -1317,6 +1326,13 @@ function renderGame() {
                 renderGame();
             }
             animalList.push("empty");
+            animalList.forEach((animal, index) => {
+                if (animal != "empty") {
+                    if (players[turn-1].animals[animal] == "goat" || players[turn-1].freeze[animal]) {
+                        animalList.splice(index, 1);
+                    }
+                }
+            });
             renderLine("What will the badger breed as?", 9, "rgb(0, 0, 0)");
             startX = width/2+playerWidth/2+buttonSize/2-buttonSize*animalList.length;
             startY = buttonSize*3;
@@ -1471,11 +1487,13 @@ function renderGame() {
             } else if (players[turn-1].animals["pig"] == "goat") {
                 shop.push([["sheep", 6], ["cow", 1], "twoSided"]);
                 shop.push([["cow", 2], ["horse", 1], "twoSided"]);
+                if (addons["pegasus"]) shop.push([["horse", 2], ["pegasus", 1], "twoSided"]);
                 if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
                 if (players[turn-1].animals["bigDog"] < 2) shop.push([["cow", 1], ["bigDog", 1], "leftToRight"]);
             } else if (players[turn-1].animals["cow"] == "goat") {
                 shop.push([["sheep", 2], ["pig", 1], "twoSided"]);
                 shop.push([["pig", 6], ["horse", 1], "twoSided"]);
+                if (addons["pegasus"]) shop.push([["horse", 2], ["pegasus", 1], "twoSided"]);
                 if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
                 if (players[turn-1].animals["bigDog"] < 2) shop.push([["pig", 3], ["bigDog", 1], "leftToRight"]);
             } else if (players[turn-1].animals["horse"] == "goat") {
@@ -1487,6 +1505,7 @@ function renderGame() {
                 shop.push([["sheep", 2], ["pig", 1], "twoSided"]);
                 shop.push([["pig", 3], ["cow", 1], "twoSided"]);
                 shop.push([["cow", 2], ["horse", 1], "twoSided"]);
+                if (addons["pegasus"]) shop.push([["horse", 2], ["pegasus", 1], "twoSided"]);
                 if (players[turn-1].animals["smallDog"] < 2) shop.push([["sheep", 1], ["smallDog", 1], "leftToRight"]);
                 if (players[turn-1].animals["bigDog"] < 2) shop.push([["cow", 1], ["bigDog", 1], "leftToRight"]);
             }
