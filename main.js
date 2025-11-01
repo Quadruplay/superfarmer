@@ -8,7 +8,7 @@ canvas.setAttribute("height", window.innerHeight);
 
 let singleEnabled = !false;
 
-const version = "1w24g";
+const version = "44w25a";
 
 if (window.location.href.includes("?eraseCache=true")) {
     window.location = window.location.href.split("?")[0];
@@ -29,7 +29,7 @@ async function loadImages() {
     "salmon", "pond", "frog", "turtle", "cod", "duck", "arrowFrog", "arrowFrogHover", "alpaca", "water", "antiWater",
     "celestialTalisman", "shadowTalisman", "arrowShadowHover", "arrowCelestialHover", "cheese", "milk", "mouse", "cheddar",
     "brie", "gouda", "blueCheese", "snowFox", "freeze", "seal", "iceWolf", "phoenix", "scarecrow", "crow", "pumpkin", "stick", "hay",
-    "coop", "wood", "ufo"];
+    "coop", "wood", "ufo", "fishingRod", "lilyPad", "can", "boot"];
     return new Promise((resolve, reject) => {
         let loaded = 0;
         for (let i = 0; i < imageList.length; i++) {
@@ -66,6 +66,7 @@ let actionAnimals = ["goat", "cat", "bag", "bee", "squirrel", "donkey", "snake",
 let aquaticAnimals = ["cod", "salmon", "duck", "beaver"];
 let pondDie1 = ["cod", "cod", "cod", "cod", "salmon", "salmon", "salmon", "duck", "beaver", "otter"];
 let pondDie2 = ["cod", "cod", "cod", "cod", "cod", "salmon", "salmon", "duck", "duck", "hippocampus"];
+let fishingDie = ["can", "boot", "lilyPad", "boot", "cod", "cod", "cod", "cod", "salmon", "salmon", "salmon"]
 let ufoAnimals = [];
 for (let i = 0; i < 10; i++) {
     ufoAnimals.push("rabbit");
@@ -151,6 +152,7 @@ class Player {
             "celestialTalisman": 0,
             "shadowTalisman": 0,
             "pond": 0,
+            "fishingRod": 0,
             "alpaca": 0
         }
         if (addons["chicken"]) {
@@ -208,7 +210,8 @@ class Player {
             "scarecrow": -1,
             "pumpkin": -1,
             "stick": -1,
-            "hay": -1
+            "hay": -1,
+            "fishingRod": -1,
         }
         this.setCaps = () => {
             let capObject = {
@@ -817,7 +820,7 @@ function renderPlayers(players) {
                 quantifier = addons["pegasus"];
             } else if (animal == "unicorn" || animal == "nightmare" || animal == "celestialTalisman" || animal == "shadowTalisman") {
                 quantifier = addons["shadowBeast"];
-            } else if (["cod","salmon","duck","beaver","hippocampus","turtle","frog"].includes(animal)) {
+            } else if (["cod","salmon","duck","beaver","hippocampus","turtle","frog","fishingRod"].includes(animal)) {
                 quantifier = addons["pond"];
             } else if (["water", "stick", "hay", "pumpkin", "scarecrow", "crow"].includes(animal)) {
                 quantifier = addons["lettuce"];
@@ -1592,6 +1595,9 @@ function renderGame() {
                 if (players[turn-1].animals["pond"] == 0) {
                     shop.push([["sheep", 1], ["pond", 1], "leftToRight"]);
                 } else {
+                    if (players[turn-1].animals["fishingRod"] == 0) {
+                        shop.push([["sheep", 1], ["fishingRod", 1], "leftToRight"]);
+                    }
                     if (players[turn-1].animals["cod"] == 0) shop.push([["rabbit", 1], ["cod", 1], "leftToRight"]);
                     shop.push([["cod", 4], ["salmon", 1], "twoSided"]);
                     shop.push([["salmon", 3], ["duck", 1], "twoSided"]);
@@ -2070,9 +2076,12 @@ function renderGame() {
                 players[turn-1].breed(pondRoll1, pondRoll2);
                 players[turn-1].prune();
                 activity = "tribute";
+                if (players[turn-1].animals["fishingRod"] > 0) activity = "fishing";
                 renderBackground();
                 renderGame();
             });
+            break;
+        case "fishing":
             break;
         case "bag":
             renderLine("Open the bag!", 1, "rgb(0, 0, 0)");
@@ -3518,17 +3527,17 @@ function renderAnimalInstructions() {
     lineArr = [];
     while (textArr.length > 0) {
         let line = "";
-        while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0) {
+        do {
             line += textArr.shift() + " ";
-        }
+        } while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0)
         lineArr.push(line);
     }
     textArr = type.split(" ");
     while (textArr.length > 0) {
         let line = "";
-        while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0) {
+        do {
             line += textArr.shift() + " ";
-        }
+        } while (ctx.measureText(line+textArr[0]).width < buttonSize*3 && textArr.length > 0)
         lineArr.push(line);
     }
     startX = width-buttonSize*3;
